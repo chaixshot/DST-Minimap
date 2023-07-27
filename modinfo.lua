@@ -21,7 +21,7 @@ Moreover, the original is very steady]],
 }
 description = desc[language] or desc["en"]
 author = "H@mer"
-version = "3.0C"
+version = "3.1"
 forumthread = ""
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
@@ -30,6 +30,7 @@ priority = 9999
 dont_starve_compatible = false
 reign_of_giants_compatible = false
 shipwrecked_compatible = false
+hamlet_compatible = false
 dst_compatible = true
 client_only_mod = true
 server_only_mod = false
@@ -213,15 +214,6 @@ configuration_options =
         {
             {description = "False",        data = false},
             {description = "True", 		   data = true},
-        },
-        default = false,
-    },
-    {
-        name = "! FACTORY RESET !",
-        options =
-        {
-            {description = "No", 		   data = false},
-            {description = "Yes",          data = true},
         },
         default = false,
     },

@@ -32,7 +32,7 @@ local ModConfig = Class(Screen, function(self, IsDST)
 	Screen._ctor(self, "ModConfig")
 
 	self.IsDST = IsDST
-	self.minimapwidgetmz = nil
+	self.minimapwidget = nil
 	self.modmain_updatestate_callback = nil
 	self.quicksaving = false
 	if self.IsDST then
@@ -111,7 +111,11 @@ function ModConfig:Open()
     if self.shield then
         self.shield:Kill()
     end
-    self.shield = self.root:AddChild(Image("images/globalpanels2.xml", "panel_long.tex"))
+    if self.IsDST then
+		self.shield = self.root:AddChild( Image( "images/globalpanels2.xml", "panel_long.tex" ) )
+	else
+		self.shield = self.root:AddChild( Image( "images/globalpanels.xml", "panel_long.tex" ) )
+	end
     self.shield:SetPosition(0, 0, 0)
     self.shield:SetSize(1000, 700)
     self.shield:SetTint(1, 1, 1, 1)
@@ -176,8 +180,8 @@ function ModConfig:Open()
     self.resetbutton:SetFocusChangeDir(MOVE_LEFT, self.cancelbutton)
 
     self.default_focus = self.applybutton
-    if self.minimapwidgetmz then
-        self.dirty = self.minimapwidgetmz:IsDirty()
+    if self.minimapwidget then
+        self.dirty = self.minimapwidget:IsDirty()
     else
         self.dirty = false
     end
@@ -253,8 +257,7 @@ function ModConfig:MapControl(idx, name, value)
     local controlId = 0
     local controlIndex = controlId + 1 -- C++ control id is zero-based, we were passed a 1-based (lua) array index
     --print("Mapping control [" .. controlIndex .. "] on device [" .. deviceId .. "]")
-    local loc_text = value
-    local default_text = string.format("Original: %s", loc_text)
+    local default_text = string.format("Original: %s", value)
     local body_text = STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT .. "\n\n" .. default_text
     local popup = PopupDialogScreen(name, body_text, {})
     popup.text:SetFont(UIFONT)
@@ -424,21 +427,6 @@ function ModConfig:UpdateModConfigDataFromBasicToFull()
     end
 end
 
-function ModConfig:FACTORY_RESET()
-    self:ResetToDefaultBasic()
-    self:ResetToDefaultFull()
-
-    self:UpdateOptions()
-    local settings = self:CollectSettings()
-    self:SaveConfigurationOptions(
-        function()
-            self:MakeDirty(false)
-        end,
-        self.modname,
-        settings
-    )
-end
-
 function ModConfig:ResetToDefaultBasic()
     for i, v in pairs(self.modinfobasic.configuration_options) do
         v.saved = v.default
@@ -468,7 +456,6 @@ function ModConfig:UpdateState()
     self._margin_size_y = self:GetModConfigDataBasic("Vertical Margin")
     self._default_zoom = self:GetModConfigDataBasic("Default Zoom")
     self._close_when_open_chest = self:GetModConfigDataBasic("Close when open chest")
-    self._factory_reset = self:GetModConfigDataBasic("FACTORY RESET")
 
     -- Full Options --
     self.mapscale = self:GetModConfigDataFull("Map Size")
@@ -504,41 +491,16 @@ function ModConfig:UpdateState()
     self.configkey_raw = self:GetModConfigDataFull("Config Shotcut Key")
     self.configkey = self:GetKey(self.configkey_raw)
     self.configkey_modifier = self:GetModifierKey(self.configkey_raw)
-    self.factory_reset = self:GetModConfigDataFull("! FACTORY RESET !")
-
-    -- ! FACTORY RESET !
-    if self._factory_reset or self.factory_reset then
-        self.factory_reset_mode = true
-        self:FACTORY_RESET()
-        self.factory_reset_mode = false
-    end
-
-    --  print("--------BASIC")
-    --  for i,v in pairs(self.modinfobasic.configuration_options) do
-    --      print("i="..tostring(i))
-    --      print("v.name="..tostring(v.name))
-    --      print("v.saved="..tostring(v.saved))
-    --  end
-    --  print("--------FULL")
-    --  for i,v in pairs(self.modinfofull.configuration_options) do
-    --      print("i="..tostring(i))
-    --      print("v.name="..tostring(v.name))
-    --      print("v.saved="..tostring(v.saved))
-    --  end
 end
 
 function ModConfig:QuickSave()
     self.quicksaving = true
     self:UpdateOptions()
     local settings = self:CollectSettings()
-    self:SaveConfigurationOptions(
-        function()
-            self:MakeDirty(false)
-            self.minimapwidgetmz:MakeDirty(false)
-        end,
-        self.modname,
-        settings
-    )
+    self:SaveConfigurationOptions(function()
+        self:MakeDirty(false)
+        self.minimapwidget:MakeDirty(false)
+    end, self.modname, settings)
     self.quicksaving = false
 end
 
@@ -707,10 +669,7 @@ function ModConfig:InitializeModInfo(modname, modinfoname)
 end
 
 function ModConfig:HasModConfigurationOptions(modinfo)
-    if
-        modinfo and modinfo.configuration_options and type(modinfo.configuration_options) == "table" and
-            #modinfo.configuration_options > 0
-     then
+    if modinfo and modinfo.configuration_options and type(modinfo.configuration_options) == "table" and #modinfo.configuration_options > 0 then
         return true
     end
     return false
@@ -756,10 +715,7 @@ function ModConfig:CollectSettings()
         if not settings then
             settings = {}
         end
-        table.insert(
-            settings,
-            {name = v.name, label = v.label, options = v.options, default = v.default, saved = v.value}
-        )
+        table.insert(settings, {name = v.name, label = v.label, options = v.options, default = v.default, saved = v.value})
     end
     return settings
 end
@@ -773,13 +729,11 @@ function ModConfig:ResetToDefaultValues()
     end
 
     if not self:IsDefaultSettings() then
-        self:ConfirmRevert(
-            function()
-                TheFrontEnd:PopScreen()
-                self:MakeDirty()
-                reset()
-            end
-        )
+        self:ConfirmRevert(function()
+            TheFrontEnd:PopScreen()
+            self:MakeDirty()
+            reset()
+        end)
     end
 end
 
@@ -810,11 +764,9 @@ function ModConfig:SaveConfigurationOptions(callback, modname, configdata)
 
         -- Update internal state
         self:UpdateState()
-        if not self.factory_reset_mode then
-            self.minimapwidgetmz:UpdateState()
-            if self.modmain_updatestate_callback then
-                self.modmain_updatestate_callback()
-            end
+        self.minimapwidget:UpdateState()
+        if self.modmain_updatestate_callback then
+            self.modmain_updatestate_callback()
         end
     end
 
@@ -827,7 +779,7 @@ function ModConfig:Apply()
         self:SaveConfigurationOptions(
             function()
                 self:MakeDirty(false)
-                self.minimapwidgetmz:MakeDirty(false)
+                self.minimapwidget:MakeDirty(false)
                 self:Close()
             end,
             self.modname,
@@ -835,36 +787,31 @@ function ModConfig:Apply()
         )
     else
         self:MakeDirty(false)
-        self.minimapwidgetmz:MakeDirty(false)
+        self.minimapwidget:MakeDirty(false)
         self:Close()
     end
 end
 
 function ModConfig:ConfirmRevert(callback)
-    TheFrontEnd:PushScreen(
-        PopupDialogScreen(
-            STRINGS.UI.MODSSCREEN.BACKTITLE,
-            STRINGS.UI.MODSSCREEN.BACKBODY,
-            {
-                {
-                    text = STRINGS.UI.MODSSCREEN.YES,
-                    cb = callback or function()
-                            TheFrontEnd:PopScreen()
-                        end
-                },
-                {
-                    text = STRINGS.UI.MODSSCREEN.NO,
-                    cb = function()
-                        TheFrontEnd:PopScreen()
-                    end
-                }
-            }
-        )
-    )
+    TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.BACKTITLE, STRINGS.UI.MODSSCREEN.BACKBODY,
+    {
+        {
+            text = STRINGS.UI.MODSSCREEN.YES,
+            cb = callback or function()
+                    TheFrontEnd:PopScreen()
+                end
+        },
+        {
+            text = STRINGS.UI.MODSSCREEN.NO,
+            cb = function()
+                TheFrontEnd:PopScreen()
+            end
+        }
+    }))
 end
 
 function ModConfig:Cancel()
-    if self:IsDirty() and not (self.started_default and self:IsDefaultSettings()) and not self.minimapwidgetmz:IsDirty() then
+    if self:IsDirty() and not (self.started_default and self:IsDefaultSettings()) and not self.minimapwidget:IsDirty() then
         self:ConfirmRevert(
             function()
                 TheFrontEnd:PopScreen()
@@ -873,7 +820,7 @@ function ModConfig:Cancel()
             end
         )
     else
-        if not self.minimapwidgetmz:IsDirty() then
+        if not self.minimapwidget:IsDirty() then
             self:MakeDirty(false)
         end
         self:Close()
@@ -933,7 +880,7 @@ end
 
 function ModConfig:Scroll(dir)
     if (dir > 0 and (self.option_offset + ROWS_PER_COL * 2) < #options) or (dir < 0 and self.option_offset + dir >= 0) then
-        self.option_offset = self.option_offset + dir
+        self.option_offset = self.option_offset + (dir*2)
     end
 
     if self.option_offset > 0 then
@@ -968,12 +915,9 @@ function ModConfig:RefreshOptions()
         local idx = self.option_offset + k
 
         if options[idx] then
-            local opt = self.optionspanel:AddChild(Widget("option"))
+            local opt = self.optionspanel:AddChild(Widget("group"))
 
-            if
-                options[idx].name == "Toggle Minimap Key" or options[idx].name == "Center Character Key" or
-                    options[idx].name == "Config Shotcut Key"
-             then
+            if options[idx].name == "Toggle Minimap Key" or options[idx].name == "Center Character Key" or options[idx].name == "Config Shotcut Key" then
                 local button_height = 50
                 local w = 220
                 local button = opt:AddChild(ImageButton())
@@ -984,7 +928,7 @@ function ModConfig:RefreshOptions()
                 local new_text_value, new_value = self:JoinFromInputs(device, numInputs, inputs)
                 button:SetText(new_text_value)
                 if options[idx].default ~= new_value then
-                    button:SetTextColour(0, 0, 0, 1)
+                    button:SetTextColour(0, 1, 0, 1)
                 else
                     button:SetTextColour(0, 0, 1, 1)
                 end
@@ -993,23 +937,14 @@ function ModConfig:RefreshOptions()
                 local button_scale_h = button_height / button_h
                 button:SetScale(button_scale_w, button_scale_h)
                 button:SetPosition(35, 0, 0)
-                button:SetOnClick(
-                    function()
-                        self:MapControl(idx, options[idx].name, new_text_value)
-                    end
-                )
+                button:SetOnClick(function()
+                    self:MapControl(idx, options[idx].name, new_text_value)
+                end)
 
                 local spacing = 55
                 local label_width = 180 * 1 / button_scale_w
 
-                local label =
-                    button:AddChild(
-                    Text(
-                        BUTTONFONT,
-                        30,
-                        (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING
-                    )
-                )
+                local label = button:AddChild(Text(BUTTONFONT, 30, (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
                 label:SetScale(1 / button_scale_w, 1 / button_scale_h)
                 label:SetPosition(-label_width / 2 - 105 * 1 / button_scale_w, 0, 0)
                 label:SetRegionSize(label_width, 50)
@@ -1037,16 +972,20 @@ function ModConfig:RefreshOptions()
 
                 local spin_height = 50
                 local w = 220
-                local spinner = opt:AddChild(Spinner(spin_options, w, spin_height))
+                local spinner = opt:AddChild(Spinner(spin_options, w, spin_height, {font=BUTTONFONT, size=25}, nil, nil, nil, true, nil, nil))
                 local default_value = options[idx].value
                 if default_value == nil then
                     default_value = options[idx].default
                 end
 
                 if options[idx].value and options[idx].default ~= options[idx].value then
-                    spinner:SetTextColour(0, 0, 0, 1)
+                    spinner:SetTextColour(0, 1, 0, 1)
                 else
-                    spinner:SetTextColour(0, 0, 1, 1)
+                    if self.IsDST then
+                        spinner:SetTextColour(1, 1, 1, 1) -- White
+                    else
+                        spinner:SetTextColour(0, 0, 0, 1) -- Black
+                    end
                 end
 
                 spinner.OnChanged = function(_, data)
@@ -1055,7 +994,11 @@ function ModConfig:RefreshOptions()
                     if options[idx].default ~= data then
                         spinner:SetTextColour(1, 0, 0, 1)
                     else
-                        spinner:SetTextColour(0, 0, 1, 1)
+                        if self.IsDST then
+                        spinner:SetTextColour(1, 1, 1, 1) -- White
+                    else
+                        spinner:SetTextColour(0, 0, 0, 1) -- Black
+                    end
                     end
                 end
 
@@ -1073,14 +1016,7 @@ function ModConfig:RefreshOptions()
                 local spacing = 55
                 local label_width = 180
 
-                local label =
-                    spinner:AddChild(
-                    Text(
-                        BUTTONFONT,
-                        30,
-                        (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING
-                    )
-                )
+                local label = spinner:AddChild(Text(BUTTONFONT, 30, (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
                 label:SetPosition(-label_width / 2 - 105, 0, 0)
                 label:SetRegionSize(label_width, 50)
                 label:SetHAlign(ANCHOR_MIDDLE)
@@ -1183,17 +1119,11 @@ function ModConfig:GetHelpText()
     table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 
     if self.leftbutton.shown then
-        table.insert(
-            t,
-            TheInput:GetLocalizedControl(controller_id, self.CONTROL_PAGELEFT) .. " " .. STRINGS.UI.HELP.SCROLLBACK
-        )
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, self.CONTROL_PAGELEFT) .. " " .. STRINGS.UI.HELP.SCROLLBACK)
     end
 
     if self.rightbutton.shown then
-        table.insert(
-            t,
-            TheInput:GetLocalizedControl(controller_id, self.CONTROL_PAGERIGHT) .. " " .. STRINGS.UI.HELP.SCROLLFWD
-        )
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, self.CONTROL_PAGERIGHT) .. " " .. STRINGS.UI.HELP.SCROLLFWD)
     end
 
     return table.concat(t, "  ")

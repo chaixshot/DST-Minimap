@@ -4,8 +4,8 @@ local ImageButton = require "widgets/imagebutton"
 
 local world
 
-local MiniMapWidgetMz = Class(Widget, function(self, IsDST, owner, playerfn, worldfn, modconfig)
-	Widget._ctor(self, "MiniMapWidgetMz")
+local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, worldfn, modconfig)
+	Widget._ctor(self, "MiniMapWidget")
 	self.IsDST = IsDST
 	self.owner = owner
 	self.playerfn = playerfn
@@ -64,7 +64,7 @@ local MiniMapWidgetMz = Class(Widget, function(self, IsDST, owner, playerfn, wor
 	self:Show()
 end)
 
-function MiniMapWidgetMz:MakeDirty(dirty)
+function MiniMapWidget:MakeDirty(dirty)
     if dirty ~= nil then
         self.dirty = dirty
     else
@@ -72,11 +72,11 @@ function MiniMapWidgetMz:MakeDirty(dirty)
     end
 end
 
-function MiniMapWidgetMz:IsDirty()
+function MiniMapWidget:IsDirty()
     return self.dirty
 end
 
-function MiniMapWidgetMz:PositionMiniMap()
+function MiniMapWidget:PositionMiniMap()
     self.dir_vert = 0
     self.dir_horiz = 0
     self.anchor_vert = 0
@@ -122,13 +122,12 @@ function MiniMapWidgetMz:PositionMiniMap()
 
     self:SetPosition(
         (self.anchor_horiz * self.mapsize.w) + (self.dir_horiz * (screenw / 2 + self.mapsize.w / 2)) + marginsizex,
-        (self.anchor_vert * self.mapsize.h) + (self.dir_vert * screenh / 2 + (-self.anchor_vert * self.mapsize.h / 2)) +
-            marginsizey,
+        (self.anchor_vert * self.mapsize.h) + (self.dir_vert * screenh / 2 + (-self.anchor_vert * self.mapsize.h / 2)) + marginsizey,
         0
     )
 end
 
-function MiniMapWidgetMz:ShowHideButtons()
+function MiniMapWidget:ShowHideButtons()
     if self.open then
         if self.focus then
             if self.modconfig.tglbtn_show then
@@ -178,7 +177,7 @@ function MiniMapWidgetMz:ShowHideButtons()
     end
 end
 
-function MiniMapWidgetMz:PositionToggleButton(dx, dy)
+function MiniMapWidget:PositionToggleButton(dx, dy)
     self.tglbtn:SetScale(
         self.modconfig.mapscale + 0.175,
         self.modconfig.mapscale + 0.175,
@@ -201,7 +200,7 @@ function MiniMapWidgetMz:PositionToggleButton(dx, dy)
     self:ShowHideButtons()
 end
 
-function MiniMapWidgetMz:PositionConfigButton(dx, dy)
+function MiniMapWidget:PositionConfigButton(dx, dy)
     self.configbtn:SetScale(
         self.modconfig.mapscale + 0.175,
         self.modconfig.mapscale + 0.175,
@@ -228,7 +227,7 @@ function MiniMapWidgetMz:PositionConfigButton(dx, dy)
     self:ShowHideButtons()
 end
 
-function MiniMapWidgetMz:PositionQuickSaveButton(dx, dy)
+function MiniMapWidget:PositionQuickSaveButton(dx, dy)
     self.quicksavebtn:SetScale(
         self.modconfig.mapscale + 0.175,
         self.modconfig.mapscale + 0.175,
@@ -240,27 +239,18 @@ function MiniMapWidgetMz:PositionQuickSaveButton(dx, dy)
         h = quicksavebtnsize_h * self.modconfig.btn_scale
     }
     self.quicksavebtn.text:SetSize(40)
-    self.quicksavebtn:SetTextColour(71, 112, 27, 1)
-    self.quicksavebtn:SetTextFocusColour(71, 112, 27, 1)
-    self.quicksavebtnpos_horiz =
-        self.quicksavebtnsize.w / 1.8 +
-        (self.mapsize_view.w - self.quicksavebtnsize.w / 2 * 2) / 10 * self.modconfig.quicksavebtn_horiz_pos
+    self.quicksavebtn:SetTextColour(.4, 1, .4, 1)
+    self.quicksavebtn:SetTextFocusColour(.4, 1, .4, 1)
+    self.quicksavebtnpos_horiz = self.quicksavebtnsize.w / 1.8 + (self.mapsize_view.w - self.quicksavebtnsize.w / 2 * 2) / 10 * self.modconfig.quicksavebtn_horiz_pos
 
-    self.quicksavebtnpos_vert =
-        -self.quicksavebtnsize.h / 2 -
-        (self.mapsize_view.h - self.quicksavebtnsize.h / 2 * 2) / 10 * self.modconfig.quicksavebtn_vert_pos
-    local newbuttonpos =
-        Point(
-        -self.mapsize_view.w / 2 + self.quicksavebtnpos_horiz + dx,
-        self.mapsize_view.h / 2 + self.quicksavebtnpos_vert + dy,
-        0
-    )
+    self.quicksavebtnpos_vert = -self.quicksavebtnsize.h / 2 - (self.mapsize_view.h - self.quicksavebtnsize.h / 2 * 2) / 10 * self.modconfig.quicksavebtn_vert_pos
+    local newbuttonpos = Point(-self.mapsize_view.w / 2 + self.quicksavebtnpos_horiz + dx, self.mapsize_view.h / 2 + self.quicksavebtnpos_vert + dy, 0)
     self.quicksavebtn.o_pos = newbuttonpos
     self.quicksavebtn:SetPosition(newbuttonpos:Get())
     self:ShowHideButtons()
 end
 
-function MiniMapWidgetMz:UpdateState()
+function MiniMapWidget:UpdateState()
     self.mapsize = {
         w = self.mapsize_orig_w * self.modconfig.mapscale * self.modconfig.scale_horiz,
         h = self.mapsize_orig_h * self.modconfig.mapscale * self.modconfig.scale_vert
@@ -297,7 +287,7 @@ function MiniMapWidgetMz:UpdateState()
     self:SetOpen(true)
 end
 
-function MiniMapWidgetMz:ResizeMapView(mappos_x, mappos_y)
+function MiniMapWidget:ResizeMapView(mappos_x, mappos_y)
     local hudscale = self.playerfn().HUD.controls.top_root:GetScale()
     if mappos_x == nil or mappos_y == nil then
         local mappos_now = self:GetPosition()
@@ -390,11 +380,11 @@ function MiniMapWidgetMz:ResizeMapView(mappos_x, mappos_y)
     return new_mappos_x, new_mappos_y
 end
 
-function MiniMapWidgetMz:ToggleOpen()
+function MiniMapWidget:ToggleOpen()
     self:SetOpen(not self:IsOpen())
 end
 
-function MiniMapWidgetMz:SetOpen(state)
+function MiniMapWidget:SetOpen(state)
     if state == nil then
         state = true
     end
@@ -442,12 +432,12 @@ function MiniMapWidgetMz:SetOpen(state)
     end
 end
 
-function MiniMapWidgetMz:IsOpen()
+function MiniMapWidget:IsOpen()
     return self.open
 end
 
-function MiniMapWidgetMz:OnControl(control, down)
-    if MiniMapWidgetMz._base.OnControl(self, control, down) then
+function MiniMapWidget:OnControl(control, down)
+    if MiniMapWidget._base.OnControl(self, control, down) then
         return true
     end
     if TheInput:IsControlPressed(CONTROL_MAP_ZOOM_IN) then
@@ -459,7 +449,7 @@ function MiniMapWidgetMz:OnControl(control, down)
     end
 end
 
-function MiniMapWidgetMz:OnGainFocus()
+function MiniMapWidget:OnGainFocus()
     self:MoveToFront()
     self.bg:SetTint(1, 1, 1, 1)
     self.img:SetTint(1, 1, 1, 1)
@@ -474,7 +464,7 @@ function MiniMapWidgetMz:OnGainFocus()
     end
 end
 
-function MiniMapWidgetMz:OnLoseFocus()
+function MiniMapWidget:OnLoseFocus()
     if self.lastpos then
         local newmappos_x, newmappos_y = self:ResizeMapView()
         self:SetPosition(newmappos_x, newmappos_y)
@@ -495,13 +485,13 @@ function MiniMapWidgetMz:OnLoseFocus()
     end
 end
 
-function MiniMapWidgetMz:SetTextureHandle(handle)
+function MiniMapWidget:SetTextureHandle(handle)
     self.img.inst.ImageWidget:SetTextureHandle(handle)
 end
 
-function MiniMapWidgetMz:OnZoomIn()
+function MiniMapWidget:OnZoomIn()
     if self.shown then
-        if TheInput:IsKeyDown(KEY_CTRL) and not TheInput:IsKeyDown(KEY_SHIFT) and not TheInput:IsKeyDown(KEY_ALT) then
+        if TheInput:IsKeyDown(KEY_CTRL) and not TheInput:IsKeyDown(KEY_SHIFT) then
             self.mapsize.w = self.mapsize.w + 25
             self.mapsize.h = self.mapsize.h + 25 * (self.mapsize_orig_h / self.mapsize_orig_w)
             local basesize_tiny = 0.125
@@ -533,9 +523,9 @@ function MiniMapWidgetMz:OnZoomIn()
     end
 end
 
-function MiniMapWidgetMz:OnZoomOut()
+function MiniMapWidget:OnZoomOut()
     if self.shown then
-        if TheInput:IsKeyDown(KEY_CTRL) and not TheInput:IsKeyDown(KEY_SHIFT) and not TheInput:IsKeyDown(KEY_ALT) then
+        if TheInput:IsKeyDown(KEY_CTRL) and not TheInput:IsKeyDown(KEY_SHIFT) then
             self.mapsize.w = self.mapsize.w - 25
             self.mapsize.h = self.mapsize.h - 25 * (self.mapsize_orig_h / self.mapsize_orig_w)
             local basesize_tiny = 0.125
@@ -577,12 +567,12 @@ function MiniMapWidgetMz:OnZoomOut()
     end
 end
 
-function MiniMapWidgetMz:UpdateTexture()
+function MiniMapWidget:UpdateTexture()
     local handle = self.minimap:GetTextureHandle()
     self:SetTextureHandle(handle)
 end
 
-function MiniMapWidgetMz:OnUpdate(dt)
+function MiniMapWidget:OnUpdate(dt)
     if not self.shown then
         return
     end
@@ -602,18 +592,8 @@ function MiniMapWidgetMz:OnUpdate(dt)
         if self.lastpos and (self.lastpos.x ~= pos.x or self.lastpos.y ~= pos.y) then
             local hudscale = self.playerfn().HUD.controls.top_root:GetScale()
             local scrn_w, scrn_h = TheSim:GetScreenSize()
-            local mapscale_gap_w =
-                self.adjustvalue * scrn_w / self.mapsize.w /
-                (2 ^
-                    (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) /
-                        math.log(1 / self.uvscalechangelevel1) -
-                        1))
-            local mapscale_gap_h =
-                self.adjustvalue * scrn_h / self.mapsize.h /
-                (2 ^
-                    (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) /
-                        math.log(1 / self.uvscalechangelevel1) -
-                        1))
+            local mapscale_gap_w = self.adjustvalue * scrn_w / self.mapsize.w / (2 ^ (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) / math.log(1 / self.uvscalechangelevel1) - 1))
+            local mapscale_gap_h = self.adjustvalue * scrn_h / self.mapsize.h / (2 ^ (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) / math.log(1 / self.uvscalechangelevel1) - 1))
             local scrn_dx = (pos.x - self.lastpos.x) / hudscale.x
             local scrn_dy = (pos.y - self.lastpos.y) / hudscale.y
             local location_gap_dx = mapscale_gap_w * scrn_dx
@@ -698,12 +678,12 @@ function MiniMapWidgetMz:OnUpdate(dt)
     end
 end
 
-function MiniMapWidgetMz:SaveConfigValueMapSize(w)
+function MiniMapWidget:SaveConfigValueMapSize(w)
     self.modconfig.mapscale = w / self.mapsize_orig_w
     self.modconfig:SetModConfigDataFull("Map Size", self.modconfig.mapscale)
 end
 
-function MiniMapWidgetMz:SaveConfigValueMapPos(x, y)
+function MiniMapWidget:SaveConfigValueMapPos(x, y)
     local scrn_w, scrn_h = TheSim:GetScreenSize()
     local hudscale = self.playerfn().HUD.controls.top_root:GetScale()
     local new_horiz_margin = (scrn_w / hudscale.x / 2 - x) - self.mapsize.w / 2
@@ -716,11 +696,11 @@ function MiniMapWidgetMz:SaveConfigValueMapPos(x, y)
     self.modconfig:SetModConfigDataFull("Position", self.modconfig.position_str)
 end
 
-function MiniMapWidgetMz:Offset(dx, dy)
+function MiniMapWidget:Offset(dx, dy)
     self.minimap:Offset(dx, dy)
 end
 
-function MiniMapWidgetMz:OnShow()
+function MiniMapWidget:OnShow()
     if not self.minimap:IsVisible() then
         self.minimap:ToggleVisibility()
     end
@@ -733,7 +713,7 @@ function MiniMapWidgetMz:OnShow()
     self:ResetOffset()
 end
 
-function MiniMapWidgetMz:ResetOffset()
+function MiniMapWidget:ResetOffset()
     self.minimap:ResetOffset()
     local scrn_w, scrn_h = TheSim:GetScreenSize()
     local mapscale_gap_w =
@@ -753,7 +733,7 @@ function MiniMapWidgetMz:ResetOffset()
     self.minimap:Offset(location_gap_x, location_gap_y)
 end
 
-function MiniMapWidgetMz:OnHide()
+function MiniMapWidget:OnHide()
     if self.minimap:IsVisible() then
         self.minimap:ToggleVisibility()
     end
@@ -764,7 +744,7 @@ function MiniMapWidgetMz:OnHide()
     self:DisableMinimapUpdating()
 end
 
-function MiniMapWidgetMz:ToggleVisibility()
+function MiniMapWidget:ToggleVisibility()
     if self:IsVisible() then
         self:Hide()
     else
@@ -772,7 +752,7 @@ function MiniMapWidgetMz:ToggleVisibility()
     end
 end
 
-function MiniMapWidgetMz:IsMinimapUpdating()
+function MiniMapWidget:IsMinimapUpdating()
     if self.ups > 0 then
         -- ups throttling enabled
         return self.task_ups ~= nil
@@ -783,7 +763,7 @@ function MiniMapWidgetMz:IsMinimapUpdating()
 end
 
 --Diable mapupdateing with hide map
-function MiniMapWidgetMz:EnableMinimapUpdating()
+function MiniMapWidget:EnableMinimapUpdating()
     if self.ups > 0 then
         -- ups throttling enabled
         -- need to check this, function is called twice in succession on startup (on creation and when first shown)
@@ -800,7 +780,7 @@ function MiniMapWidgetMz:EnableMinimapUpdating()
     end
 end
 
-function MiniMapWidgetMz:DisableMinimapUpdating()
+function MiniMapWidget:DisableMinimapUpdating()
     if self.ups > 0 then
         -- ups throttling enabled
         if self.task_ups ~= nil then
@@ -817,18 +797,18 @@ end
 
 -- schedule task starting minimap updating
 -- assumes ups throttling is enabled
-function MiniMapWidgetMz:ScheduleUpdate()
+function MiniMapWidget:ScheduleUpdate()
     self.task_ups = self.inst:DoTaskInTime(self.ups, function()
-		if not self.minimap:IsVisible() then
-			self.minimap:ToggleVisibility()
-		end
-		self:StopUpdatingAndReschedule()
+        if not self.minimap:IsVisible() then
+            self.minimap:ToggleVisibility()
+        end
+        self:StopUpdatingAndReschedule()
 	end)
 end
 
 -- schedule task ending minimap updating
 -- assumes ups throttling is enabled
-function MiniMapWidgetMz:StopUpdatingAndReschedule()
+function MiniMapWidget:StopUpdatingAndReschedule()
     self.task_ups = self.inst:DoTaskInTime(0, function()
 		if self.minimap:IsVisible() then
 			self.minimap:ToggleVisibility()
@@ -837,7 +817,7 @@ function MiniMapWidgetMz:StopUpdatingAndReschedule()
 	end)
 end
 
-function MiniMapWidgetMz:SetUPS(ups)
+function MiniMapWidget:SetUPS(ups)
     local wasenabled = self:IsMinimapUpdating()
 
     self:DisableMinimapUpdating()
@@ -847,4 +827,4 @@ function MiniMapWidgetMz:SetUPS(ups)
     end
 end
 
-return MiniMapWidgetMz
+return MiniMapWidget
