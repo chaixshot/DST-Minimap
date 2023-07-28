@@ -132,10 +132,7 @@ function ModConfig:Open()
     if self.rightbutton then
         self.rightbutton:Kill()
     end
-    self.rightbutton =
-        self.optionspanel:AddChild(
-        ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex")
-    )
+    self.rightbutton = self.optionspanel:AddChild(ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex"))
     self.rightbutton:SetPosition(330, 0, 0)
     self.rightbutton:SetScale(.5)
     self.rightbutton:SetOnClick(
@@ -150,10 +147,7 @@ function ModConfig:Open()
     if self.leftbutton then
         self.leftbutton:Kill()
     end
-    self.leftbutton =
-        self.optionspanel:AddChild(
-        ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex")
-    )
+    self.leftbutton = self.optionspanel:AddChild(ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex"))
     self.leftbutton:SetPosition(-330, 0, 0)
     self.leftbutton:SetScale(-.5, .5, .5)
     self.leftbutton:SetOnClick(
@@ -167,14 +161,9 @@ function ModConfig:Open()
     self.is_mapping = false
     self.mapping_idx = nil
     self.inputhandlers = {}
-    table.insert(
-        self.inputhandlers,
-        TheInput:AddControlMappingHandler(
-            function(deviceId, controlId, inputId, hasChanged)
-                self:OnControlMapped(deviceId, controlId, inputId, hasChanged)
-            end
-        )
-    )
+    table.insert(self.inputhandlers, TheInput:AddControlMappingHandler(function(deviceId, controlId, inputId, hasChanged)
+        self:OnControlMapped(deviceId, controlId, inputId, hasChanged)
+    end))
 
     self.optionwidgets = {}
 
@@ -200,7 +189,8 @@ function ModConfig:MapControl(idx, name, value)
     local controlId = 0
     local default_text = string.format(STRINGS.UI.OPTIONS.DEFAULT..": %s", value)
     local body_text = STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT .. "\n\n" .. default_text
-    local popup = PopupDialogScreen(name, body_text, {})
+    local popup = PopupDialogScreen(name, body_text)
+
     popup.OnControl = function(_, control, down)
         self:MapControlInputHandler(control, down)
     end
@@ -294,24 +284,14 @@ function ModConfig:OnControlMapped(deviceId, controlId, inputId, hasChanged)
         if hasChanged then
             for k, v in pairs(self.optionwidgets) do
                 if v.root.button and v.root.button.option_idx == self.mapping_idx then
-                    local device, numInputs, input1, input2, input3, input4, intParam =
-                        TheInputProxy:GetLocalizedControl(deviceId, controlId, false, true)
+                    local device, numInputs, input1, input2, input3, input4, intParam = TheInputProxy:GetLocalizedControl(deviceId, controlId, false, true)
                     local new_text_value, new_value = self:JoinFromInputs(device, numInputs, {[1] = input1, [2] = input2, [3] = input3, [4] = input4})
                     v.root.button:SetText(new_text_value)
                     if options[self.mapping_idx].default ~= new_value then
                         v.root.button:SetTextColour(1, 0, 0, 1)
                         v.root.button:SetTextFocusColour(1, 0, 0, 1)
-                    else
-                        v.root.button:SetTextColour(0, 0, 1, 1)
-                        v.root.button:SetTextFocusColour(0, 0, 1, 1)
                     end
                     options[self.mapping_idx].value = new_value
-                end
-                local changedFromOriginal = TheInputProxy:HasMappingChanged(deviceId, controlId)
-                if changedFromOriginal then
-                    --v.bg:Show()
-                else
-                    --v.bg:Hide()
                 end
             end
         end
@@ -327,12 +307,13 @@ function ModConfig:OnControlMapped(deviceId, controlId, inputId, hasChanged)
 end
 
 function ModConfig:MapControlInputHandler(control, down)
-    --  if not down and control == CONTROL_CANCEL then
-    --    TheInputProxy:CancelMapping()
-    --    self.is_mapping = false
-    --    self.mapping_idx = nil
-    --    TheFrontEnd:PopScreen()
-    --  end
+     if not down and control == CONTROL_CANCEL then
+       TheInputProxy:CancelMapping()
+       self.is_mapping = false
+       self.mapping_idx = nil
+       TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+       TheFrontEnd:PopScreen()
+     end
 end
 
 function ModConfig:IsOpen()
@@ -874,7 +855,7 @@ function ModConfig:RefreshOptions()
 
         if options[idx] then
             local group = self.optionspanel:AddChild(Widget("SpinnerGroup"))
-            group.bg = group:AddChild(TEMPLATES.ListItemBackground(280, 40))
+            group.bg = group:AddChild(TEMPLATES.ListItemBackground(300, 40))
             
             if options[idx].name == "Toggle Minimap Key" or options[idx].name == "Center Character Key" or options[idx].name == "Config Shotcut Key" then
                 local button_height = 30
@@ -884,7 +865,7 @@ function ModConfig:RefreshOptions()
                 button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 
                 button:SetFont(BUTTONFONT)
-                button:SetTextSize(18)
+                button:SetTextSize(20)
                 local value = options[idx].value or options[idx].saved or options[idx].default
                 local device, numInputs, inputs = self:SplitToInputs(value)
                 local new_text_value, new_value = self:JoinFromInputs(device, numInputs, inputs)
@@ -895,17 +876,17 @@ function ModConfig:RefreshOptions()
                     button:SetTextColour(1, 1, 1, 1)
                 end
                 
-                button:SetPosition(64, 0, 0)
+                button:SetPosition(81, 0, 0)
                 button:SetHelpTextMessage(STRINGS.UI.CONTROLSSCREEN.CHANGEBIND)
                 button:SetOnClick(function()
                     self:MapControl(idx, options[idx].name, new_text_value)
                 end)
 
                 local spacing = 40
-                local label = button:AddChild(Text(BUTTONFONT, 18, (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
+                local label = button:AddChild(Text(BUTTONFONT, 20, (options[idx].label and options[idx].label..":" or options[idx].name..":") or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
                 label:SetScale(1, 1) 
                 label:SetPosition(-115, 0, 0)
-                label:SetHAlign(ANCHOR_MIDDLE)
+                label:SetHAlign(ANCHOR_RIGHT)
                 label:SetColour(UICOLOURS.GOLD)
 
                 group.button = button
@@ -929,13 +910,13 @@ function ModConfig:RefreshOptions()
                 end
 
                 local spinner = group:AddChild(TEMPLATES.LabelSpinner(
-                    (options[idx].label or options[idx].name),
+                    (options[idx].label and options[idx].label..":" or options[idx].name..":"),
                     spin_options,
-                    130, -- label width
+                    160, -- label width
                     130, -- spinner width
                     30, -- arrow height
                     0,  -- spacing between label and spinner
-                    BUTTONFONT, 18, -- font and size
+                    BUTTONFONT, 20, -- font and size
                     0, -- horizontal offset
                     function(value, oldvalue) -- onchanged_fn
                     end

@@ -30,7 +30,7 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, world
 			self:ToggleOpen()
 		end,
 		"togglebutton",
-		{145, 50}
+		{200, 70}
     ))
 	self.quicksavebtn = self:AddChild(TEMPLATES.StandardButton(
 		function()
@@ -38,7 +38,7 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, world
             self:PositionQuickSaveButton(0, 0)
 		end,
 		"quicksavebtn",
-		{145, 50}
+		{200, 70}
     ))
 	self.configbtn = self:AddChild(TEMPLATES.StandardButton(
 		function()
@@ -47,7 +47,7 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, world
             end
 		end,
 		"configbtn",
-		{145, 50}
+		{200, 70}
     ))
 	-- ups stuff, needs to be before SetOpen()
 	self.ups = 0 -- 0 if disabled, otherwise delay till next update
