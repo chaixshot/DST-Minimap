@@ -2,8 +2,6 @@ local Widget = require "widgets/widget"
 local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
 
-local world
-
 local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, worldfn, modconfig)
 	Widget._ctor(self, "MiniMapWidget")
 	self.IsDST = IsDST
@@ -26,8 +24,8 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, world
 	self.img:SetSize(self.mapsize.w, self.mapsize.h, 0)
 	self.bg:SetSize(self.mapsize.w, self.mapsize.h, 0)
 	self.bg:SetClickable(false)
-	self.tglbtn = self:AddChild(ImageButton())
-	self.tglbtn:SetOnClick(function()
+	self.togglebutton = self:AddChild(ImageButton())
+	self.togglebutton:SetOnClick(function()
 		self:ToggleOpen()
 	end)
 	self.quicksavebtn = self:AddChild(ImageButton())
@@ -130,10 +128,10 @@ end
 function MiniMapWidget:ShowHideButtons()
     if self.open then
         if self.focus then
-            if self.modconfig.tglbtn_show then
-                self.tglbtn:Show()
+            if self.modconfig.togglebutton_show then
+                self.togglebutton:Show()
             else
-                self.tglbtn:Hide()
+                self.togglebutton:Hide()
             end
             if self.modconfig.configbtn_show then
                 self.configbtn:Show()
@@ -147,14 +145,14 @@ function MiniMapWidget:ShowHideButtons()
             end
         else
             if self.modconfig.map_clickable then
-                self.tglbtn:Hide()
+                self.togglebutton:Hide()
                 self.configbtn:Hide()
                 self.quicksavebtn:Hide()
             else
-                if self.modconfig.tglbtn_show then
-                    self.tglbtn:Show()
+                if self.modconfig.togglebutton_show then
+                    self.togglebutton:Show()
                 else
-                    self.tglbtn:Hide()
+                    self.togglebutton:Hide()
                 end
                 if self.modconfig.configbtn_show then
                     self.configbtn:Show()
@@ -169,8 +167,10 @@ function MiniMapWidget:ShowHideButtons()
             end
         end
     else
-        if self.modconfig.tglbtn_show then
-            self.tglbtn:Show()
+        if self.modconfig.togglebutton_show then
+            self.togglebutton:Show()
+        else
+            self.togglebutton:Hide()
         end
         self.configbtn:Hide()
         self.quicksavebtn:Hide()
@@ -178,25 +178,25 @@ function MiniMapWidget:ShowHideButtons()
 end
 
 function MiniMapWidget:PositionToggleButton(dx, dy)
-    self.tglbtn:SetScale(
+    self.togglebutton:SetScale(
         self.modconfig.mapscale + 0.175,
         self.modconfig.mapscale + 0.175,
         self.modconfig.mapscale + 0.175
     )
-    local tglbtnsize_w, tglbtnsize_h = self.tglbtn:GetSize()
-    self.tglbtnsize = {w = tglbtnsize_w * self.modconfig.btn_scale, h = tglbtnsize_h * self.modconfig.btn_scale}
-    self.tglbtnpos_horiz = 60
+    local togglebuttonsize_w, togglebuttonsize_h = self.togglebutton:GetSize()
+    self.togglebuttonsize = {w = togglebuttonsize_w * self.modconfig.btn_scale, h = togglebuttonsize_h * self.modconfig.btn_scale}
+    self.togglebuttonpos_horiz = 60
 
-    self.tglbtnpos_vert =
-        -self.tglbtnsize.h / 2 - (self.mapsize_view.h - self.tglbtnsize.h / 2 * 2) / 10 * self.modconfig.tglbtn_vert_pos
+    self.togglebuttonpos_vert =
+        -self.togglebuttonsize.h / 2 - (self.mapsize_view.h - self.togglebuttonsize.h / 2 * 2) / 10 * self.modconfig.togglebutton_vert_pos
     local newbuttonpos =
         Point(
-        -self.mapsize_view.w / 2 + self.tglbtnpos_horiz + dx,
-        self.mapsize_view.h / 2 + self.tglbtnpos_vert + dy,
+        -self.mapsize_view.w / 2 + self.togglebuttonpos_horiz + dx,
+        self.mapsize_view.h / 2 + self.togglebuttonpos_vert + dy,
         0
     )
-    self.tglbtn.o_pos = newbuttonpos
-    self.tglbtn:SetPosition(newbuttonpos:Get())
+    self.togglebutton.o_pos = newbuttonpos
+    self.togglebutton:SetPosition(newbuttonpos:Get())
     self:ShowHideButtons()
 end
 
@@ -356,18 +356,8 @@ function MiniMapWidget:ResizeMapView(mappos_x, mappos_y)
 
     if self.lastpos_bg then
         local scrn_w, scrn_h = TheSim:GetScreenSize()
-        local mapscale_gap_w =
-            self.adjustvalue * scrn_w / self.mapsize.w /
-            (2 ^
-                (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) /
-                    math.log(1 / self.uvscalechangelevel1) -
-                    1))
-        local mapscale_gap_h =
-            self.adjustvalue * scrn_h / self.mapsize.h /
-            (2 ^
-                (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) /
-                    math.log(1 / self.uvscalechangelevel1) -
-                    1))
+        local mapscale_gap_w = self.adjustvalue * scrn_w / self.mapsize.w / (2 ^ (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) / math.log(1 / self.uvscalechangelevel1) - 1))
+        local mapscale_gap_h = self.adjustvalue * scrn_h / self.mapsize.h / (2 ^ (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) / math.log(1 / self.uvscalechangelevel1) - 1))
         local location_gap_x = (dx - self.lastpos_bg.x) * mapscale_gap_w
         local location_gap_y = (dy - self.lastpos_bg.y) * mapscale_gap_h
         self.minimap:Offset(location_gap_x, location_gap_y)
@@ -393,7 +383,7 @@ function MiniMapWidget:SetOpen(state)
         self.open = true
 
         -- Toggle Button --
-        self.tglbtn:SetText("Close Minimap")
+        self.togglebutton:SetText("Close Minimap")
 
         -- Config Button --
         self.configbtn:SetText("Configure Mod")
@@ -415,7 +405,7 @@ function MiniMapWidget:SetOpen(state)
         self.open = false
 
         -- Toggle Button --
-        self.tglbtn:SetText("Open Minimap")
+        self.togglebutton:SetText("Open Minimap")
 
         -- Config Button --
         self.configbtn:SetText("Configure Mod")
@@ -436,17 +426,15 @@ function MiniMapWidget:IsOpen()
     return self.open
 end
 
-function MiniMapWidget:OnControl(control, down)
-    if MiniMapWidget._base.OnControl(self, control, down) then
-        return true
-    end
-    if TheInput:IsControlPressed(CONTROL_MAP_ZOOM_IN) then
-        self:OnZoomIn()
-        return true
-    elseif TheInput:IsControlPressed(CONTROL_MAP_ZOOM_OUT) then
-        self:OnZoomOut()
-        return true
-    end
+function MiniMapWidget:OnControl(control, down )
+	if MiniMapWidget._base.OnControl(self, control, down) then return true end
+	if down and control == CONTROL_MAP_ZOOM_IN then
+		self:OnZoomIn()
+		return true
+	elseif down and control == CONTROL_MAP_ZOOM_OUT then
+		self:OnZoomOut()
+		return true
+	end
 end
 
 function MiniMapWidget:OnGainFocus()
@@ -460,7 +448,11 @@ function MiniMapWidget:OnGainFocus()
 
     self:ShowHideButtons()
     if self:IsOpen() then
-        self.tglbtn:Show()
+        if self.modconfig.togglebutton_show then
+            self.togglebutton:Show()
+        else
+            self.togglebutton:Hide()
+        end
     end
 end
 
@@ -481,7 +473,7 @@ function MiniMapWidget:OnLoseFocus()
     self:ShowHideButtons()
 
     if self:IsOpen() then
-        self.tglbtn:Hide()
+        self.togglebutton:Hide()
     end
 end
 
@@ -491,7 +483,7 @@ end
 
 function MiniMapWidget:OnZoomIn()
     if self.shown then
-        if TheInput:IsKeyDown(KEY_CTRL) and not TheInput:IsKeyDown(KEY_SHIFT) then
+        if TheInput:IsKeyDown(KEY_CTRL) and not TheInput:IsKeyDown(KEY_SHIFT) then -- Change minimap size
             self.mapsize.w = self.mapsize.w + 25
             self.mapsize.h = self.mapsize.h + 25 * (self.mapsize_orig_h / self.mapsize_orig_w)
             local basesize_tiny = 0.125
@@ -510,9 +502,8 @@ function MiniMapWidget:OnZoomIn()
             self:SaveConfigValueMapPos(newmappos_x, newmappos_y)
             self:MakeDirty()
             self:ShowHideButtons()
-        else
+        else -- Chage map zooming
             if self.minimapzoom == 0 then
-                --        self.uvscale = math.min(1.875, (self.uvscalechangelevel1 + self.uvscale)/self.uvscalechangelevel1)
                 self.uvscale = math.min(1.9, self.uvscale + self.uvscalechangelevel2)
             end
             self.img:SetUVScale(self.uvscale, self.uvscale)
@@ -525,7 +516,7 @@ end
 
 function MiniMapWidget:OnZoomOut()
     if self.shown then
-        if TheInput:IsKeyDown(KEY_CTRL) and not TheInput:IsKeyDown(KEY_SHIFT) then
+        if TheInput:IsKeyDown(KEY_CTRL) and not TheInput:IsKeyDown(KEY_SHIFT) then -- Change minimap size
             self.mapsize.w = self.mapsize.w - 25
             self.mapsize.h = self.mapsize.h - 25 * (self.mapsize_orig_h / self.mapsize_orig_w)
             local basesize_tiny = 0.125
@@ -544,13 +535,11 @@ function MiniMapWidget:OnZoomOut()
             self:SaveConfigValueMapPos(newmappos_x, newmappos_y)
             self:MakeDirty()
             self:ShowHideButtons()
-        else
+        else -- Chage map zooming
             local old_minimapzoom = self.minimapzoom
             local dozoom = true
             if self.minimapzoom == 0 then
-                --        if self.uvscale - 1 > 0.05 then
                 if self.uvscale - 1 > self.uvscalechangelevel2 then
-                    --          self.uvscale = math.max(1, self.uvscalechangelevel1*self.uvscale - self.uvscalechangelevel1)
                     self.uvscale = math.max(1, self.uvscale - self.uvscalechangelevel2)
                     dozoom = false
                 else
@@ -716,18 +705,8 @@ end
 function MiniMapWidget:ResetOffset()
     self.minimap:ResetOffset()
     local scrn_w, scrn_h = TheSim:GetScreenSize()
-    local mapscale_gap_w =
-        self.adjustvalue * scrn_w / self.mapsize.w /
-        (2 ^
-            (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) /
-                math.log(1 / self.uvscalechangelevel1) -
-                1))
-    local mapscale_gap_h =
-        self.adjustvalue * scrn_h / self.mapsize.h /
-        (2 ^
-            (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) /
-                math.log(1 / self.uvscalechangelevel1) -
-                1))
+    local mapscale_gap_w = self.adjustvalue * scrn_w / self.mapsize.w / (2 ^ (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) / math.log(1 / self.uvscalechangelevel1) - 1))
+    local mapscale_gap_h = self.adjustvalue * scrn_h / self.mapsize.h / (2 ^ (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) / math.log(1 / self.uvscalechangelevel1) - 1))
     local location_gap_x = self.mappos_gap.x * mapscale_gap_w + self.mapcenter_gap.x
     local location_gap_y = self.mappos_gap.y * mapscale_gap_h + self.mapcenter_gap.y
     self.minimap:Offset(location_gap_x, location_gap_y)
