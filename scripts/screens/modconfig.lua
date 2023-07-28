@@ -13,7 +13,8 @@ local UIAnim = require "widgets/uianim"
 local Spinner = require "widgets/spinner"
 local NumericSpinner = require "widgets/numericspinner"
 local Widget = require "widgets/widget"
-local PopupDialogScreen = require "screens/popupdialog"
+local PopupDialogScreen = require "screens/redux/popupdialog"
+local TEMPLATES = require "widgets/redux/templates"
 
 local text_font = UIFONT
 
@@ -80,24 +81,16 @@ function ModConfig:Open()
 
     self.started_default = self:IsDefaultSettings()
 
-    if nil then
-        if self.bg then
-            self.bg:Kill()
-        end
-        self.bg = self:AddChild(Image("images/global.xml", "square.tex"))
-
-        if IsDLCEnabled(REIGN_OF_GIANTS) then
-            self.bg:SetTint(BGCOLOURS.PURPLE[1], BGCOLOURS.PURPLE[2], BGCOLOURS.PURPLE[3], 0.75)
-        else
-            self.bg:SetTint(BGCOLOURS.RED[1], BGCOLOURS.RED[2], BGCOLOURS.RED[3], 0.75)
-        end
-
-        self.bg:SetVRegPoint(ANCHOR_MIDDLE)
-        self.bg:SetHRegPoint(ANCHOR_MIDDLE)
-        self.bg:SetVAnchor(ANCHOR_MIDDLE)
-        self.bg:SetHAnchor(ANCHOR_MIDDLE)
-        self.bg:SetScaleMode(SCALEMODE_FILLSCREEN)
+    if self.bg then
+        self.bg:Kill()
     end
+    self.bg = self:AddChild(Image("images/global.xml", "square.tex"))
+    self.bg:SetVRegPoint(ANCHOR_MIDDLE)
+    self.bg:SetHRegPoint(ANCHOR_MIDDLE)
+    self.bg:SetVAnchor(ANCHOR_MIDDLE)
+    self.bg:SetHAnchor(ANCHOR_MIDDLE)
+    self.bg:SetScaleMode(SCALEMODE_FILLSCREEN)
+    self.bg:SetTint(0,0,0,.5)	
 
     if self.root then
         self.root:Kill()
@@ -108,30 +101,20 @@ function ModConfig:Open()
     self.root:SetPosition(0, 0, 0)
     self.root:SetScaleMode(SCALEMODE_PROPORTIONAL)
 
-    if self.shield then
-        self.shield:Kill()
-    end
-    if self.IsDST then
-		self.shield = self.root:AddChild( Image( "images/globalpanels2.xml", "panel_long.tex" ) )
-	else
-		self.shield = self.root:AddChild( Image( "images/globalpanels.xml", "panel_long.tex" ) )
-	end
-    self.shield:SetPosition(0, 0, 0)
-    self.shield:SetSize(1000, 700)
-    self.shield:SetTint(1, 1, 1, 1)
-
     local titlestr = KnownModIndex:GetModFancyName(self.modname)
     local maxtitlelength = 26
     if titlestr:len() > maxtitlelength then
         titlestr = titlestr:sub(1, maxtitlelength)
     end
     titlestr = titlestr .. " " .. STRINGS.UI.MODSSCREEN.CONFIGSCREENTITLESUFFIX
-    if self.title then
-        self.title:Kill()
-    end
-    self.title = self.root:AddChild(Text(TITLEFONT, 50, titlestr))
-    self.title:SetPosition(0, 210)
-    self.title:SetColour(1, 1, 1, 1)
+    
+    local close_button = {
+        {text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() self:Apply() end},
+        {text = STRINGS.UI.MODSSCREEN.CANCEL, cb = function() self:Cancel() end},
+        {text = STRINGS.UI.MODSSCREEN.RESETDEFAULT, cb = function() self:ResetToDefaultValues() end},
+    }
+	self.bg = self.root:AddChild(TEMPLATES.RectangleWindow(700, 400, titlestr, close_button))
+	self.bg.title:SetPosition(0, -70)
 
     self.option_offset = 0
     if self.optionspanel then
@@ -140,46 +123,6 @@ function ModConfig:Open()
     self.optionspanel = self.root:AddChild(Widget("optionspanel"))
     self.optionspanel:SetPosition(0, -20)
 
-    if self.menu then
-        self.menu:Kill()
-        self.applybutton:Kill()
-        self.cancelbutton:Kill()
-        self.resetbutton:Kill()
-    end
-    self.menu = self.root:AddChild(Menu(nil, 0, false))
-    self.applybutton =
-        self.menu:AddItem(
-        STRINGS.UI.MODSSCREEN.APPLY,
-        function()
-            self:Apply()
-        end,
-        Vector3(-260, -290 + 30, 0)
-    )
-    self.cancelbutton =
-        self.menu:AddItem(
-        STRINGS.UI.MODSSCREEN.CANCEL,
-        function()
-            self:Cancel()
-        end,
-        Vector3(-110, -290 + 30, 0)
-    )
-    self.resetbutton =
-        self.menu:AddItem(
-        STRINGS.UI.MODSSCREEN.RESETDEFAULT,
-        function()
-            self:ResetToDefaultValues()
-        end,
-        Vector3(205, -290 + 30, 0)
-    )
-    self.applybutton:SetScale(.7)
-    self.cancelbutton:SetScale(.7)
-    self.resetbutton:SetScale(.7)
-    self.applybutton:SetFocusChangeDir(MOVE_RIGHT, self.cancelbutton)
-    self.cancelbutton:SetFocusChangeDir(MOVE_LEFT, self.applybutton)
-    self.cancelbutton:SetFocusChangeDir(MOVE_RIGHT, self.resetbutton)
-    self.resetbutton:SetFocusChangeDir(MOVE_LEFT, self.cancelbutton)
-
-    self.default_focus = self.applybutton
     if self.minimapwidget then
         self.dirty = self.minimapwidget:IsDirty()
     else
@@ -193,8 +136,8 @@ function ModConfig:Open()
         self.optionspanel:AddChild(
         ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex")
     )
-    self.rightbutton:SetPosition(440, 0, 0)
-    self.rightbutton:SetScale(.9)
+    self.rightbutton:SetPosition(330, 0, 0)
+    self.rightbutton:SetScale(.5)
     self.rightbutton:SetOnClick(
         function()
             self:Scroll(ROWS_PER_COL)
@@ -211,8 +154,8 @@ function ModConfig:Open()
         self.optionspanel:AddChild(
         ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex")
     )
-    self.leftbutton:SetPosition(-440, 0, 0)
-    self.leftbutton:SetScale(-.9, .9, .9)
+    self.leftbutton:SetPosition(-330, 0, 0)
+    self.leftbutton:SetScale(-.5, .5, .5)
     self.leftbutton:SetOnClick(
         function()
             self:Scroll(-ROWS_PER_COL)
@@ -255,14 +198,9 @@ end
 function ModConfig:MapControl(idx, name, value)
     local deviceId = 0
     local controlId = 0
-    local controlIndex = controlId + 1 -- C++ control id is zero-based, we were passed a 1-based (lua) array index
-    --print("Mapping control [" .. controlIndex .. "] on device [" .. deviceId .. "]")
     local default_text = string.format(STRINGS.UI.OPTIONS.DEFAULT..": %s", value)
     local body_text = STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT .. "\n\n" .. default_text
     local popup = PopupDialogScreen(name, body_text, {})
-    popup.text:SetFont(UIFONT)
-    popup.text:SetRegionSize(480, 150)
-    popup.text:SetPosition(0, -25, 0)
     popup.OnControl = function(_, control, down)
         self:MapControlInputHandler(control, down)
     end
@@ -342,7 +280,7 @@ function ModConfig:JoinFromInputs(device, numInputs, inputs)
         new_text_value = "Disable"
         new_value = "1+1+0+0+0+0"
     elseif numInputs == 1 then
-        new_text_value = "KEY " .. new_text_value
+        new_text_value = new_text_value
     end
 
     return new_text_value, new_value
@@ -358,8 +296,7 @@ function ModConfig:OnControlMapped(deviceId, controlId, inputId, hasChanged)
                 if v.root.button and v.root.button.option_idx == self.mapping_idx then
                     local device, numInputs, input1, input2, input3, input4, intParam =
                         TheInputProxy:GetLocalizedControl(deviceId, controlId, false, true)
-                    local new_text_value, new_value =
-                        self:JoinFromInputs(device, numInputs, {[1] = input1, [2] = input2, [3] = input3, [4] = input4})
+                    local new_text_value, new_value = self:JoinFromInputs(device, numInputs, {[1] = input1, [2] = input2, [3] = input3, [4] = input4})
                     v.root.button:SetText(new_text_value)
                     if options[self.mapping_idx].default ~= new_value then
                         v.root.button:SetTextColour(1, 0, 0, 1)
@@ -898,6 +835,27 @@ function ModConfig:Scroll(dir)
     self:RefreshOptions()
 end
 
+local function AddHoverText(widget, params, labelText)
+	params = params or {}
+	
+	-- Widget class defaults these on its own in SetHoverText
+	-- params.font = params.font or NEWFONT_OUTLINE
+	-- params.size = params.size or 22
+	
+	params.offset_x = params.offset_x or 2
+	-- add an extra 30 if it's got two lines of text
+	params.offset_y = params.offset_y or 75
+	local sign = params.offset_y < 0 and -1 or 1
+	params.offset_y = params.offset_y + sign*(labelText:match("\n") and 30 or 0)
+	params.colour = params.colour or UICOLOURS.WHITE
+	
+	-- switcharoo with the text to make sure the hover parenting works correctly (bypassing a dev workaround for labels)
+	local text = widget.text
+	widget.text = nil
+	widget:SetHoverText(labelText, params)
+	widget.text = text
+end
+
 function ModConfig:RefreshOptions()
     local focus = self:GetDeepestFocus()
     local old_column = focus and focus.column
@@ -916,14 +874,17 @@ function ModConfig:RefreshOptions()
 
         if options[idx] then
             local group = self.optionspanel:AddChild(Widget("SpinnerGroup"))
+            group.bg = group:AddChild(TEMPLATES.ListItemBackground(280, 40))
             
             if options[idx].name == "Toggle Minimap Key" or options[idx].name == "Center Character Key" or options[idx].name == "Config Shotcut Key" then
-                local button_height = 50
-                local w = 220
-                local button = group:AddChild(ImageButton())
+                local button_height = 30
+                local w = 130
+                local button = group:AddChild(ImageButton("images/global_redux.xml", "blank.tex", "spinner_focus.tex"))
+                button:ForceImageSize(w, button_height)
+                button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 
                 button:SetFont(BUTTONFONT)
-                button:SetTextSize(28)
+                button:SetTextSize(18)
                 local value = options[idx].value or options[idx].saved or options[idx].default
                 local device, numInputs, inputs = self:SplitToInputs(value)
                 local new_text_value, new_value = self:JoinFromInputs(device, numInputs, inputs)
@@ -931,26 +892,21 @@ function ModConfig:RefreshOptions()
                 if options[idx].default ~= new_value then
                     button:SetTextColour(0, 1, 0, 1)
                 else
-                    button:SetTextColour(0, 0, 1, 1)
+                    button:SetTextColour(1, 1, 1, 1)
                 end
-                local button_w, button_h = button:GetSize()
-                local button_scale_w = w / button_w
-                local button_scale_h = button_height / button_h
-                button:SetScale(button_scale_w, button_scale_h)
-                button:SetPosition(35, 0, 0)
+                
+                button:SetPosition(64, 0, 0)
+                button:SetHelpTextMessage(STRINGS.UI.CONTROLSSCREEN.CHANGEBIND)
                 button:SetOnClick(function()
                     self:MapControl(idx, options[idx].name, new_text_value)
                 end)
 
-                local spacing = 55
-                local label_width = 180 * 1 / button_scale_w
-
-                local label = button:AddChild(Text(BUTTONFONT, 30, (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
-                
-                label:SetScale(1 / button_scale_w, 1 / button_scale_h)
-                label:SetPosition(-label_width / 2 - 105 * 1 / button_scale_w, 0, 0)
-                label:SetRegionSize(label_width, 50)
+                local spacing = 40
+                local label = button:AddChild(Text(BUTTONFONT, 18, (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
+                label:SetScale(1, 1) 
+                label:SetPosition(-115, 0, 0)
                 label:SetHAlign(ANCHOR_MIDDLE)
+                label:SetColour(UICOLOURS.GOLD)
 
                 group.button = button
                 button.option_idx = idx
@@ -961,7 +917,7 @@ function ModConfig:RefreshOptions()
                     button.column = "left"
                     button.idx = #self.left_spinners
                 else
-                    group:SetPosition(265, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
+                    group:SetPosition(160, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
                     table.insert(self.right_spinners, button)
                     button.column = "right"
                     button.idx = #self.right_spinners
@@ -972,70 +928,73 @@ function ModConfig:RefreshOptions()
                     table.insert(spin_options, {text = v.description, data = v.data})
                 end
 
-                local spin_height = 50
-                local w = 220
-                local spinner = group:AddChild(Spinner(spin_options, w, spin_height, {font=BUTTONFONT, size=25}, nil, nil, nil, true, nil, nil))
-                spinner.changed_image = spinner:AddChild(Image("images/ui.xml", "option_highlight.tex"))
-                spinner.changed_image:ScaleToSize(w, spin_height)
-                spinner.changed_image:SetClickable(false)
-                spinner.changed_image:MoveToBack()
+                local spinner = group:AddChild(TEMPLATES.LabelSpinner(
+                    (options[idx].label or options[idx].name),
+                    spin_options,
+                    130, -- label width
+                    130, -- spinner width
+                    30, -- arrow height
+                    0,  -- spacing between label and spinner
+                    BUTTONFONT, 18, -- font and size
+                    0, -- horizontal offset
+                    function(value, oldvalue) -- onchanged_fn
+                    end
+                ))
+                AddHoverText(spinner, {offset_x = -4, offset_y = 50}, (options[idx].hover or ""))
+                
+                spinner.spinner:SetOnChangedFn(function(value, oldvalue)
+                    options[idx].value = value
+                    self:MakeDirty()
+                    if options[idx].default ~= value then
+                        spinner.spinner:SetTextColour(1, 0, 0, 1)
+                    else
+                        if self.IsDST then
+                            spinner.spinner:SetTextColour(1, 1, 1, 1) -- White
+                        else
+                            spinner.spinner:SetTextColour(0, 0, 0, 1) -- Black
+                        end
+                    end
+                end)
                 
                 local default_value = options[idx].value
                 if default_value == nil then
                     default_value = options[idx].default
                 end
+                spinner.spinner:SetSelected(default_value)
 
                 if options[idx].value and options[idx].default ~= options[idx].value then
-                    spinner:SetTextColour(0, 1, 0, 1)
+                    spinner.spinner:SetTextColour(0, 1, 0, 1)
                 else
                     if self.IsDST then
-                        spinner:SetTextColour(1, 1, 1, 1) -- White
+                        spinner.spinner:SetTextColour(1, 1, 1, 1) -- White
                     else
-                        spinner:SetTextColour(0, 0, 0, 1) -- Black
+                        spinner.spinner:SetTextColour(0, 0, 0, 1) -- Black
                     end
                 end
-
-                spinner.OnChanged = function(_, data)
-                    options[idx].value = data
-                    self:MakeDirty()
-                    if options[idx].default ~= data then
-                        spinner:SetTextColour(1, 0, 0, 1)
-                    else
-                        if self.IsDST then
-                            spinner:SetTextColour(1, 1, 1, 1) -- White
-                        else
-                            spinner:SetTextColour(0, 0, 0, 1) -- Black
-                        end
-                    end
-                end
-
-                spinner:SetSelected(default_value)
-                if spinner:GetSelectedData() ~= default_value then
-                    if self:IsDirty() then
-                        spinner:SetTextColour(1, 0, 0, 1)
-                    else
-                        spinner:SetTextColour(0, 1, 0, 1)
-                    end
-                    spinner:UpdateText("Custom Value")
-                end
-                spinner:SetPosition(35, 0, 0)
-
-                local spacing = 55
-                local label_width = 180
-
-                local label = spinner:AddChild(Text(BUTTONFONT, 30, (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
                 
-                label:SetPosition(-label_width / 2 - 105, 0, 0)
-                label:SetRegionSize(label_width, 50)
-                label:SetHAlign(ANCHOR_MIDDLE)
+                local checkcustom = true
+                for k,v in pairs(spin_options) do
+                    if v.data == default_value then
+                        checkcustom = false
+                    end
+                end
+                if checkcustom then
+                    if self:IsDirty() then
+                        spinner.spinner:SetTextColour(1, 0, 0, 1)
+                    else
+                        spinner.spinner:SetTextColour(0, 1, 0, 1)
+                    end
+                    spinner.spinner:UpdateText("Custom Value")
+                end
 
+                local spacing = 40
                 if k <= ROWS_PER_COL then
                     group:SetPosition(-155, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
                     table.insert(self.left_spinners, spinner)
                     spinner.column = "left"
                     spinner.idx = #self.left_spinners
                 else
-                    group:SetPosition(265, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
+                    group:SetPosition(160, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
                     table.insert(self.right_spinners, spinner)
                     spinner.column = "right"
                     spinner.idx = #self.right_spinners
@@ -1082,8 +1041,6 @@ function ModConfig:HookupFocusMoves()
         local belowspinner = GetFirstEnabledSpinnerBelow(k, self.left_spinners)
         if belowspinner then
             self.left_spinners[k]:SetFocusChangeDir(MOVE_DOWN, belowspinner)
-        else
-            self.left_spinners[k]:SetFocusChangeDir(MOVE_DOWN, self.applybutton)
         end
 
         if self.right_spinners[k] then
@@ -1100,18 +1057,12 @@ function ModConfig:HookupFocusMoves()
         local belowspinner = GetFirstEnabledSpinnerBelow(k, self.right_spinners)
         if belowspinner then
             self.right_spinners[k]:SetFocusChangeDir(MOVE_DOWN, belowspinner)
-        else
-            self.right_spinners[k]:SetFocusChangeDir(MOVE_DOWN, self.resetbutton)
         end
 
         if self.left_spinners[k] then
             self.right_spinners[k]:SetFocusChangeDir(MOVE_LEFT, self.left_spinners[k])
         end
     end
-
-    self.applybutton:SetFocusChangeDir(MOVE_UP, self.left_spinners[#self.left_spinners])
-    self.cancelbutton:SetFocusChangeDir(MOVE_UP, self.left_spinners[#self.left_spinners])
-    self.resetbutton:SetFocusChangeDir(MOVE_UP, self.right_spinners[#self.right_spinners])
 end
 
 function ModConfig:GetHelpText()
@@ -1120,9 +1071,7 @@ function ModConfig:GetHelpText()
 
     if self:IsDirty() then
         local focus = self:GetDeepestFocus()
-        if focus ~= self.applybutton and focus ~= self.cancelbutton and focus ~= self.resetbutton then
-            table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HELP.APPLY)
-        end
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HELP.APPLY)
     end
     table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
 

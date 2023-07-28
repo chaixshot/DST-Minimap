@@ -123,6 +123,7 @@ local function AddMiniMap_main(inst)
                         return
                     end
                     if IsModifierKeyDown(modconfig.tglkey_modifier) then
+                        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
                         controls.minimapwidget:ToggleOpen()
                     end
                 end))
@@ -134,6 +135,7 @@ local function AddMiniMap_main(inst)
                         return
                     end
                     if IsModifierKeyDown(modconfig.centerresetkey_modifier) then
+                        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
                         controls.minimapwidget.mapcenter_gap = Point(0, 0)
                         controls.minimapwidget:ResetOffset()
                     end
@@ -147,6 +149,7 @@ local function AddMiniMap_main(inst)
                     end
                     if IsModifierKeyDown(modconfig.configkey_modifier) then
                         if modconfig:Open() then
+                            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
                             TheFrontEnd:PushScreen(modconfig)
                         end
                     end

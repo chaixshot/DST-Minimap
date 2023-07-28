@@ -1,6 +1,7 @@
 local Widget = require "widgets/widget"
 local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
+local TEMPLATES = require "widgets/redux/templates"
 
 local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, worldfn, modconfig)
 	Widget._ctor(self, "MiniMapWidget")
@@ -24,21 +25,30 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, world
 	self.img:SetSize(self.mapsize.w, self.mapsize.h, 0)
 	self.bg:SetSize(self.mapsize.w, self.mapsize.h, 0)
 	self.bg:SetClickable(false)
-	self.togglebutton = self:AddChild(ImageButton())
-	self.togglebutton:SetOnClick(function()
-		self:ToggleOpen()
-	end)
-	self.quicksavebtn = self:AddChild(ImageButton())
-	self.quicksavebtn:SetOnClick(function()
-		self.modconfig:QuickSave()
-		self:PositionQuickSaveButton(0, 0)
-	end)
-	self.configbtn = self:AddChild(ImageButton())
-	self.configbtn:SetOnClick(function()
-		if self.modconfig:Open() then
-			TheFrontEnd:PushScreen(self.modconfig)
-		end
-	end)
+	self.togglebutton = self:AddChild(TEMPLATES.StandardButton(
+		function()
+			self:ToggleOpen()
+		end,
+		"togglebutton",
+		{145, 50}
+    ))
+	self.quicksavebtn = self:AddChild(TEMPLATES.StandardButton(
+		function()
+			self.modconfig:QuickSave()
+            self:PositionQuickSaveButton(0, 0)
+		end,
+		"quicksavebtn",
+		{145, 50}
+    ))
+	self.configbtn = self:AddChild(TEMPLATES.StandardButton(
+		function()
+			if self.modconfig:Open() then
+                TheFrontEnd:PushScreen(self.modconfig)
+            end
+		end,
+		"configbtn",
+		{145, 50}
+    ))
 	-- ups stuff, needs to be before SetOpen()
 	self.ups = 0 -- 0 if disabled, otherwise delay till next update
 	self.task_ups = nil -- the next update task
@@ -238,9 +248,6 @@ function MiniMapWidget:PositionQuickSaveButton(dx, dy)
         w = quicksavebtnsize_w * self.modconfig.btn_scale,
         h = quicksavebtnsize_h * self.modconfig.btn_scale
     }
-    self.quicksavebtn.text:SetSize(40)
-    self.quicksavebtn:SetTextColour(.4, 1, .4, 1)
-    self.quicksavebtn:SetTextFocusColour(.4, 1, .4, 1)
     self.quicksavebtnpos_horiz = self.quicksavebtnsize.w / 1.8 + (self.mapsize_view.w - self.quicksavebtnsize.w / 2 * 2) / 10 * self.modconfig.quicksavebtn_horiz_pos
 
     self.quicksavebtnpos_vert = -self.quicksavebtnsize.h / 2 - (self.mapsize_view.h - self.quicksavebtnsize.h / 2 * 2) / 10 * self.modconfig.quicksavebtn_vert_pos
@@ -379,17 +386,14 @@ function MiniMapWidget:SetOpen(state)
         state = true
     end
 
+    self.configbtn:SetText("Configure Mod") -- Config Button --
+    self.quicksavebtn:SetText("Save Config") -- Quick Save Button --
+        
     if state then
         self.open = true
 
         -- Toggle Button --
         self.togglebutton:SetText("Close Minimap")
-
-        -- Config Button --
-        self.configbtn:SetText("Configure Mod")
-
-        -- Quick Save Button --
-        self.quicksavebtn:SetText("Save Config")
 
         -- Show/Hide Buttons
         self:ShowHideButtons()
@@ -404,14 +408,7 @@ function MiniMapWidget:SetOpen(state)
     else
         self.open = false
 
-        -- Toggle Button --
-        self.togglebutton:SetText("Open Minimap")
-
-        -- Config Button --
-        self.configbtn:SetText("Configure Mod")
-
-        -- Quick Save Button --
-        self.quicksavebtn:SetText("Save Config")
+        self.togglebutton:SetText("Open Minimap")  -- Toggle Button --
 
         -- Show/Hide Buttons
         self:ShowHideButtons()
