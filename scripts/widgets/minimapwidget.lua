@@ -32,6 +32,7 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, world
 		"togglebutton",
 		{200, 70}
     ))
+    self.togglebutton:SetFont(CHATFONT)
 	self.quicksavebtn = self:AddChild(TEMPLATES.StandardButton(
 		function()
 			self.modconfig:QuickSave()
@@ -40,6 +41,7 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, world
 		"quicksavebtn",
 		{200, 70}
     ))
+    self.quicksavebtn:SetFont(CHATFONT)
 	self.configbtn = self:AddChild(TEMPLATES.StandardButton(
 		function()
 			if self.modconfig:Open() then
@@ -49,6 +51,7 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, world
 		"configbtn",
 		{200, 70}
     ))
+    self.configbtn:SetFont(CHATFONT)
 	-- ups stuff, needs to be before SetOpen()
 	self.ups = 0 -- 0 if disabled, otherwise delay till next update
 	self.task_ups = nil -- the next update task

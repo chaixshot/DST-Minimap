@@ -16,13 +16,11 @@ local Widget = require "widgets/widget"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local TEMPLATES = require "widgets/redux/templates"
 
-local text_font = UIFONT
-
 local enableDisableOptions = {
     {text = STRINGS.UI.OPTIONS.DISABLED, data = false},
     {text = STRINGS.UI.OPTIONS.ENABLED, data = true}
 }
-local spinnerFont = {font = BUTTONFONT, size = 30}
+local spinnerFont = {font = CHATFONT, size = 30}
 
 local COLS = 2
 local ROWS_PER_COL = 7
@@ -133,7 +131,7 @@ function ModConfig:Open()
         self.rightbutton:Kill()
     end
     self.rightbutton = self.optionspanel:AddChild(ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex"))
-    self.rightbutton:SetPosition(330, 0, 0)
+    self.rightbutton:SetPosition(340, 0, 0)
     self.rightbutton:SetScale(.5)
     self.rightbutton:SetOnClick(
         function()
@@ -148,7 +146,7 @@ function ModConfig:Open()
         self.leftbutton:Kill()
     end
     self.leftbutton = self.optionspanel:AddChild(ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex"))
-    self.leftbutton:SetPosition(-330, 0, 0)
+    self.leftbutton:SetPosition(-340, 0, 0)
     self.leftbutton:SetScale(-.5, .5, .5)
     self.leftbutton:SetOnClick(
         function()
@@ -855,7 +853,7 @@ function ModConfig:RefreshOptions()
 
         if options[idx] then
             local group = self.optionspanel:AddChild(Widget("SpinnerGroup"))
-            group.bg = group:AddChild(TEMPLATES.ListItemBackground(300, 40))
+            group.bg = group:AddChild(TEMPLATES.ListItemBackground(320, 40))
             
             if options[idx].name == "Toggle Minimap Key" or options[idx].name == "Center Character Key" or options[idx].name == "Config Shotcut Key" then
                 local button_height = 30
@@ -864,8 +862,8 @@ function ModConfig:RefreshOptions()
                 button:ForceImageSize(w, button_height)
                 button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 
-                button:SetFont(BUTTONFONT)
-                button:SetTextSize(20)
+                button:SetFont(CHATFONT)
+                button:SetTextSize(18)
                 local value = options[idx].value or options[idx].saved or options[idx].default
                 local device, numInputs, inputs = self:SplitToInputs(value)
                 local new_text_value, new_value = self:JoinFromInputs(device, numInputs, inputs)
@@ -883,7 +881,7 @@ function ModConfig:RefreshOptions()
                 end)
 
                 local spacing = 40
-                local label = button:AddChild(Text(BUTTONFONT, 20, (options[idx].label and options[idx].label..":" or options[idx].name..":") or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
+                local label = button:AddChild(Text(CHATFONT, 18, (options[idx].label and options[idx].label..":" or options[idx].name..":") or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
                 label:SetScale(1, 1) 
                 label:SetPosition(-115, 0, 0)
                 label:SetHAlign(ANCHOR_RIGHT)
@@ -893,7 +891,7 @@ function ModConfig:RefreshOptions()
                 button.option_idx = idx
 
                 if k <= ROWS_PER_COL then
-                    group:SetPosition(-155, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
+                    group:SetPosition(-160, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
                     table.insert(self.left_spinners, button)
                     button.column = "left"
                     button.idx = #self.left_spinners
@@ -913,10 +911,10 @@ function ModConfig:RefreshOptions()
                     (options[idx].label and options[idx].label..":" or options[idx].name..":"),
                     spin_options,
                     160, -- label width
-                    130, -- spinner width
+                    140, -- spinner width
                     30, -- arrow height
                     0,  -- spacing between label and spinner
-                    BUTTONFONT, 20, -- font and size
+                    CHATFONT, 18, -- font and size
                     0, -- horizontal offset
                     function(value, oldvalue) -- onchanged_fn
                     end
@@ -970,7 +968,7 @@ function ModConfig:RefreshOptions()
 
                 local spacing = 40
                 if k <= ROWS_PER_COL then
-                    group:SetPosition(-155, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
+                    group:SetPosition(-160, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
                     table.insert(self.left_spinners, spinner)
                     spinner.column = "left"
                     spinner.idx = #self.left_spinners
