@@ -2,16 +2,9 @@ require "util"
 require "strings"
 require "constants"
 local Screen = require "widgets/screen"
-local Button = require "widgets/button"
-local AnimButton = require "widgets/animbutton"
 local ImageButton = require "widgets/imagebutton"
-local Menu = require "widgets/menu"
-local Grid = require "widgets/grid"
 local Text = require "widgets/text"
 local Image = require "widgets/image"
-local UIAnim = require "widgets/uianim"
-local Spinner = require "widgets/spinner"
-local NumericSpinner = require "widgets/numericspinner"
 local Widget = require "widgets/widget"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local TEMPLATES = require "widgets/redux/templates"
@@ -131,13 +124,11 @@ function ModConfig:Open()
         self.rightbutton:Kill()
     end
     self.rightbutton = self.optionspanel:AddChild(ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex"))
-    self.rightbutton:SetPosition(340, 0, 0)
+    self.rightbutton:SetPosition(360, 0, 0)
     self.rightbutton:SetScale(.5)
-    self.rightbutton:SetOnClick(
-        function()
-            self:Scroll(ROWS_PER_COL)
-        end
-    )
+    self.rightbutton:SetOnClick(function()
+        self:Scroll(ROWS_PER_COL)
+    end)
     if #options <= ROWS_PER_COL * COLS then -- Only show the arrow if we have a ton of options
         self.rightbutton:Hide()
     end
@@ -146,22 +137,15 @@ function ModConfig:Open()
         self.leftbutton:Kill()
     end
     self.leftbutton = self.optionspanel:AddChild(ImageButton("images/ui.xml", "scroll_arrow.tex", "scroll_arrow_over.tex", "scroll_arrow_disabled.tex"))
-    self.leftbutton:SetPosition(-340, 0, 0)
+    self.leftbutton:SetPosition(-360, 0, 0)
     self.leftbutton:SetScale(-.5, .5, .5)
-    self.leftbutton:SetOnClick(
-        function()
-            self:Scroll(-ROWS_PER_COL)
-        end
-    )
+    self.leftbutton:SetOnClick(function()
+        self:Scroll(-ROWS_PER_COL)
+    end)
     self.leftbutton:Hide()
 
     TheInputProxy:StartMappingControls()
-    self.is_mapping = false
     self.mapping_idx = nil
-    self.inputhandlers = {}
-    table.insert(self.inputhandlers, TheInput:AddControlMappingHandler(function(deviceId, controlId, inputId, hasChanged)
-        self:OnControlMapped(deviceId, controlId, inputId, hasChanged)
-    end))
 
     self.optionwidgets = {}
 
@@ -177,26 +161,51 @@ function ModConfig:Close()
     end
     self.open = false
     TheInputProxy:StopMappingControls()
-    for k, v in pairs(self.inputhandlers) do
-        v:Remove()
+end
+
+function ModConfig:SetKeyChar(_, key, down, noclose)
+    if down then return end
+    
+    if not noclose then
+        TheFrontEnd:PopScreen()
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
     end
+    for k, v in pairs(self.optionwidgets) do
+        if v.root.button and v.root.button.option_idx == self.mapping_idx then
+            local device, numInputs, input1, input2, input3, input4, intParam = 1, 1, key, 0, 0, 0, nil
+            local new_text_value, new_value = self:JoinFromInputs(device, numInputs, {[1] = input1, [2] = input2, [3] = input3, [4] = input4})
+            v.root.button:SetText(new_text_value)
+            if options[self.mapping_idx].default ~= new_value then
+                v.root.button:SetTextColour(UICOLOURS.RED)
+                v.root.button:SetTextFocusColour(UICOLOURS.RED)
+            end
+            options[self.mapping_idx].value = new_value
+        end
+    end
+
+    -- set the dirty flag (if something changed) if it hasn't yet been set
+    if not self:IsDirty() then
+        self:MakeDirty()
+    end
+    self.mapping_idx = nil
 end
 
 function ModConfig:MapControl(idx, name, value)
-    local deviceId = 0
-    local controlId = 0
+    self.mapping_idx = idx
+
     local default_text = string.format(STRINGS.UI.OPTIONS.DEFAULT..": %s", value)
     local body_text = STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT .. "\n\n" .. default_text
-    local popup = PopupDialogScreen(name, body_text)
+    local popup = PopupDialogScreen(name, body_text, {
+		{text=STRINGS.UI.CONTROLSSCREEN.CANCEL, cb=function()
+            TheFrontEnd:PopScreen()
+        end}
+	})
 
-    popup.OnControl = function(_, control, down)
-        self:MapControlInputHandler(control, down)
-    end
+    popup.OnRawKey = function(_, key, down)
+        self:SetKeyChar(_, key, down)
+	end	
+    
     TheFrontEnd:PushScreen(popup)
-
-    TheInputProxy:MapControl(deviceId, controlId)
-    self.is_mapping = true
-    self.mapping_idx = idx
 end
 
 local modkey_conv_tbl = {
@@ -272,46 +281,6 @@ function ModConfig:JoinFromInputs(device, numInputs, inputs)
     end
 
     return new_text_value, new_value
-end
-
-function ModConfig:OnControlMapped(deviceId, controlId, inputId, hasChanged)
-    if self.is_mapping then
-        --print("Control [" .. controlId .. "] is now [" .. inputId .. "]")
-        TheFrontEnd:PopScreen()
-        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-        if hasChanged then
-            for k, v in pairs(self.optionwidgets) do
-                if v.root.button and v.root.button.option_idx == self.mapping_idx then
-                    local device, numInputs, input1, input2, input3, input4, intParam = TheInputProxy:GetLocalizedControl(deviceId, controlId, false, true)
-                    local new_text_value, new_value = self:JoinFromInputs(device, numInputs, {[1] = input1, [2] = input2, [3] = input3, [4] = input4})
-                    v.root.button:SetText(new_text_value)
-                    if options[self.mapping_idx].default ~= new_value then
-                        v.root.button:SetTextColour(1, 0, 0, 1)
-                        v.root.button:SetTextFocusColour(1, 0, 0, 1)
-                    end
-                    options[self.mapping_idx].value = new_value
-                end
-            end
-        end
-
-        -- set the dirty flag (if something changed) if it hasn't yet been set
-        if not self:IsDirty() and hasChanged then
-            self:MakeDirty()
-        end
-
-        self.is_mapping = false
-        self.mapping_idx = nil
-    end
-end
-
-function ModConfig:MapControlInputHandler(control, down)
-     if not down and control == CONTROL_CANCEL then
-       TheInputProxy:CancelMapping()
-       self.is_mapping = false
-       self.mapping_idx = nil
-       TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-       TheFrontEnd:PopScreen()
-     end
 end
 
 function ModConfig:IsOpen()
@@ -853,65 +822,81 @@ function ModConfig:RefreshOptions()
 
         if options[idx] then
             local group = self.optionspanel:AddChild(Widget("SpinnerGroup"))
-            group.bg = group:AddChild(TEMPLATES.ListItemBackground(320, 40))
+            group.bg = group:AddChild(TEMPLATES.ListItemBackground(340, 40))
             
             if options[idx].name == "Toggle Minimap Key" or options[idx].name == "Center Character Key" or options[idx].name == "Config Shotcut Key" then
                 local button_height = 30
-                local w = 130
-                local button = group:AddChild(ImageButton("images/global_redux.xml", "blank.tex", "spinner_focus.tex"))
-                button:ForceImageSize(w, button_height)
-                button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
-
-                button:SetFont(CHATFONT)
-                button:SetTextSize(18)
+                local button_width = 100
+                
                 local value = options[idx].value or options[idx].saved or options[idx].default
                 local device, numInputs, inputs = self:SplitToInputs(value)
                 local new_text_value, new_value = self:JoinFromInputs(device, numInputs, inputs)
+
+                -- Right button
+                local button = group:AddChild(ImageButton("images/global_redux.xml", "blank.tex", "spinner_focus.tex"))
+                button:ForceImageSize(button_width, button_height)
+                button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+                button:SetFont(CHATFONT)
+                button:SetTextSize(18)
                 button:SetText(new_text_value)
                 if options[idx].default ~= new_value then
-                    button:SetTextColour(0, 1, 0, 1)
+                    button:SetTextColour(WEBCOLOURS.GREEN)
                 else
-                    button:SetTextColour(1, 1, 1, 1)
+                    button:SetTextColour(UICOLOURS.GOLD)
                 end
-                
                 button:SetPosition(81, 0, 0)
                 button:SetHelpTextMessage(STRINGS.UI.CONTROLSSCREEN.CHANGEBIND)
                 button:SetOnClick(function()
                     self:MapControl(idx, options[idx].name, new_text_value)
                 end)
-
+                
+                -- Left lable
                 local spacing = 40
                 local label = button:AddChild(Text(CHATFONT, 18, (options[idx].label and options[idx].label..":" or options[idx].name..":") or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
-                label:SetScale(1, 1) 
-                label:SetPosition(-115, 0, 0)
-                label:SetHAlign(ANCHOR_RIGHT)
                 label:SetColour(UICOLOURS.GOLD)
+                label:SetHAlign(ANCHOR_RIGHT)
+                label:SetRegionSize(200, 50)
+                label:SetPosition(-170, 0, 0)
+                label:SetClickable(false)
+                
+                -- Unbind button
+                local unbinding_btn = group:AddChild(ImageButton("images/global_redux.xml", "close.tex", "close.tex"))
+				unbinding_btn:SetOnClick(function()
+                    self.mapping_idx = idx
+                    self:SetKeyChar(false, 0, false, true)
+                end)
+				unbinding_btn:SetPosition(button_width+43, 0)
+				unbinding_btn:SetScale(0.4, 0.4)
+				unbinding_btn:SetHoverText(STRINGS.UI.CONTROLSSCREEN.UNBIND)
 
+                group.label = label
                 group.button = button
+                group.unbinding_btn = unbinding_btn
                 button.option_idx = idx
 
                 if k <= ROWS_PER_COL then
-                    group:SetPosition(-160, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
+                    group:SetPosition(-170, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
                     table.insert(self.left_spinners, button)
                     button.column = "left"
                     button.idx = #self.left_spinners
                 else
-                    group:SetPosition(160, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
+                    group:SetPosition(170, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
                     table.insert(self.right_spinners, button)
                     button.column = "right"
                     button.idx = #self.right_spinners
                 end
             else
+                -- Right list
                 local spin_options = {} --{{text="default"..tostring(idx), data="default"},{text="2", data="2"}, }
                 for k, v in ipairs(options[idx].options) do
                     table.insert(spin_options, {text = v.description, data = v.data})
                 end
 
                 local spinner = group:AddChild(TEMPLATES.LabelSpinner(
-                    (options[idx].label and options[idx].label..":" or options[idx].name..":"),
-                    spin_options,
+                    (options[idx].label and options[idx].label..":" or options[idx].name..":"), -- Left label
+                    spin_options, -- List
                     160, -- label width
-                    140, -- spinner width
+                    150, -- spinner width
                     30, -- arrow height
                     0,  -- spacing between label and spinner
                     CHATFONT, 18, -- font and size
@@ -925,12 +910,12 @@ function ModConfig:RefreshOptions()
                     options[idx].value = value
                     self:MakeDirty()
                     if options[idx].default ~= value then
-                        spinner.spinner:SetTextColour(1, 0, 0, 1)
+                        spinner.spinner:SetTextColour(UICOLOURS.RED)
                     else
                         if self.IsDST then
-                            spinner.spinner:SetTextColour(1, 1, 1, 1) -- White
+                            spinner.spinner:SetTextColour(UICOLOURS.GOLD) -- White
                         else
-                            spinner.spinner:SetTextColour(0, 0, 0, 1) -- Black
+                            spinner.spinner:SetTextColour(UICOLOURS.BLACK) -- Black
                         end
                     end
                 end)
@@ -942,12 +927,12 @@ function ModConfig:RefreshOptions()
                 spinner.spinner:SetSelected(default_value)
 
                 if options[idx].value and options[idx].default ~= options[idx].value then
-                    spinner.spinner:SetTextColour(0, 1, 0, 1)
+                    spinner.spinner:SetTextColour(WEBCOLOURS.GREEN)
                 else
                     if self.IsDST then
-                        spinner.spinner:SetTextColour(1, 1, 1, 1) -- White
+                        spinner.spinner:SetTextColour(UICOLOURS.GOLD) -- White
                     else
-                        spinner.spinner:SetTextColour(0, 0, 0, 1) -- Black
+                        spinner.spinner:SetTextColour(UICOLOURS.BLACK) -- Black
                     end
                 end
                 
@@ -959,21 +944,21 @@ function ModConfig:RefreshOptions()
                 end
                 if checkcustom then
                     if self:IsDirty() then
-                        spinner.spinner:SetTextColour(1, 0, 0, 1)
+                        spinner.spinner:SetTextColour(UICOLOURS.RED)
                     else
-                        spinner.spinner:SetTextColour(0, 1, 0, 1)
+                        spinner.spinner:SetTextColour(WEBCOLOURS.GREEN)
                     end
                     spinner.spinner:UpdateText("Custom Value")
                 end
 
                 local spacing = 40
                 if k <= ROWS_PER_COL then
-                    group:SetPosition(-160, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
+                    group:SetPosition(-170, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
                     table.insert(self.left_spinners, spinner)
                     spinner.column = "left"
                     spinner.idx = #self.left_spinners
                 else
-                    group:SetPosition(160, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
+                    group:SetPosition(170, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
                     table.insert(self.right_spinners, spinner)
                     spinner.column = "right"
                     spinner.idx = #self.right_spinners

@@ -1,6 +1,5 @@
 local Widget = require "widgets/widget"
 local Image = require "widgets/image"
-local ImageButton = require "widgets/imagebutton"
 local TEMPLATES = require "widgets/redux/templates"
 
 local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, worldfn, modconfig)
