@@ -84,7 +84,7 @@ function ModConfig:Open()
         if self.bg then
             self.bg:Kill()
         end
-        self.bg = self:AddChild(Image("images/ui.xml", "bg_plain.tex"))
+        self.bg = self:AddChild(Image("images/global.xml", "square.tex"))
 
         if IsDLCEnabled(REIGN_OF_GIANTS) then
             self.bg:SetTint(BGCOLOURS.PURPLE[1], BGCOLOURS.PURPLE[2], BGCOLOURS.PURPLE[3], 0.75)
@@ -257,7 +257,7 @@ function ModConfig:MapControl(idx, name, value)
     local controlId = 0
     local controlIndex = controlId + 1 -- C++ control id is zero-based, we were passed a 1-based (lua) array index
     --print("Mapping control [" .. controlIndex .. "] on device [" .. deviceId .. "]")
-    local default_text = string.format("Original: %s", value)
+    local default_text = string.format(STRINGS.UI.OPTIONS.DEFAULT..": %s", value)
     local body_text = STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT .. "\n\n" .. default_text
     local popup = PopupDialogScreen(name, body_text, {})
     popup.text:SetFont(UIFONT)
@@ -915,12 +915,13 @@ function ModConfig:RefreshOptions()
         local idx = self.option_offset + k
 
         if options[idx] then
-            local opt = self.optionspanel:AddChild(Widget("group"))
-
+            local group = self.optionspanel:AddChild(Widget("SpinnerGroup"))
+            
             if options[idx].name == "Toggle Minimap Key" or options[idx].name == "Center Character Key" or options[idx].name == "Config Shotcut Key" then
                 local button_height = 50
                 local w = 220
-                local button = opt:AddChild(ImageButton())
+                local button = group:AddChild(ImageButton())
+
                 button:SetFont(BUTTONFONT)
                 button:SetTextSize(28)
                 local value = options[idx].value or options[idx].saved or options[idx].default
@@ -945,21 +946,22 @@ function ModConfig:RefreshOptions()
                 local label_width = 180 * 1 / button_scale_w
 
                 local label = button:AddChild(Text(BUTTONFONT, 30, (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
+                
                 label:SetScale(1 / button_scale_w, 1 / button_scale_h)
                 label:SetPosition(-label_width / 2 - 105 * 1 / button_scale_w, 0, 0)
                 label:SetRegionSize(label_width, 50)
                 label:SetHAlign(ANCHOR_MIDDLE)
 
-                opt.button = button
+                group.button = button
                 button.option_idx = idx
 
                 if k <= ROWS_PER_COL then
-                    opt:SetPosition(-155, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
+                    group:SetPosition(-155, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
                     table.insert(self.left_spinners, button)
                     button.column = "left"
                     button.idx = #self.left_spinners
                 else
-                    opt:SetPosition(265, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
+                    group:SetPosition(265, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
                     table.insert(self.right_spinners, button)
                     button.column = "right"
                     button.idx = #self.right_spinners
@@ -972,7 +974,12 @@ function ModConfig:RefreshOptions()
 
                 local spin_height = 50
                 local w = 220
-                local spinner = opt:AddChild(Spinner(spin_options, w, spin_height, {font=BUTTONFONT, size=25}, nil, nil, nil, true, nil, nil))
+                local spinner = group:AddChild(Spinner(spin_options, w, spin_height, {font=BUTTONFONT, size=25}, nil, nil, nil, true, nil, nil))
+                spinner.changed_image = spinner:AddChild(Image("images/ui.xml", "option_highlight.tex"))
+                spinner.changed_image:ScaleToSize(w, spin_height)
+                spinner.changed_image:SetClickable(false)
+                spinner.changed_image:MoveToBack()
+                
                 local default_value = options[idx].value
                 if default_value == nil then
                     default_value = options[idx].default
@@ -995,10 +1002,10 @@ function ModConfig:RefreshOptions()
                         spinner:SetTextColour(1, 0, 0, 1)
                     else
                         if self.IsDST then
-                        spinner:SetTextColour(1, 1, 1, 1) -- White
-                    else
-                        spinner:SetTextColour(0, 0, 0, 1) -- Black
-                    end
+                            spinner:SetTextColour(1, 1, 1, 1) -- White
+                        else
+                            spinner:SetTextColour(0, 0, 0, 1) -- Black
+                        end
                     end
                 end
 
@@ -1017,24 +1024,25 @@ function ModConfig:RefreshOptions()
                 local label_width = 180
 
                 local label = spinner:AddChild(Text(BUTTONFONT, 30, (options[idx].label or options[idx].name) or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
+                
                 label:SetPosition(-label_width / 2 - 105, 0, 0)
                 label:SetRegionSize(label_width, 50)
                 label:SetHAlign(ANCHOR_MIDDLE)
 
                 if k <= ROWS_PER_COL then
-                    opt:SetPosition(-155, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
+                    group:SetPosition(-155, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1) * spacing - 10, 0)
                     table.insert(self.left_spinners, spinner)
                     spinner.column = "left"
                     spinner.idx = #self.left_spinners
                 else
-                    opt:SetPosition(265, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
+                    group:SetPosition(265, (ROWS_PER_COL - 1) * spacing * .5 - (k - 1 - ROWS_PER_COL) * spacing - 10, 0)
                     table.insert(self.right_spinners, spinner)
                     spinner.column = "right"
                     spinner.idx = #self.right_spinners
                 end
             end
 
-            table.insert(self.optionwidgets, {root = opt})
+            table.insert(self.optionwidgets, {root = group})
         end
     end
 

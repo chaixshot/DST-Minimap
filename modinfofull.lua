@@ -1,24 +1,3 @@
-name = "Minimap HUD Customizable"
-description = [[Adds a minimap to the HUD with More customiZable and more controlable configuration options in game mode are added.
-
-I think that this MOD is very complex to understand and to use it. 
-When more customizing is unnecessary, you must use original "Minimap HUD" 
-Moreover, the original is very steady. ]]
-author = "H@mer"
-version = "3.0C"
-forumthread = ""
-icon_atlas = "modicon.xml"
-icon = "modicon.tex"
-api_version = 10
-priority = 9999
-dont_starve_compatible = false
-reign_of_giants_compatible = false
-shipwrecked_compatible = false
-dst_compatible = true
-client_only_mod = true
-server_only_mod = false
-all_clients_require_mod = false
-
 configuration_options =
 {
     {
@@ -158,8 +137,8 @@ configuration_options =
         name = "Close when open chest",
         options =
         {
-            {description = "False", data = false},
-            {description = "True", data = true},
+            {description = "No", data = false},
+            {description = "Yes", data = true},
         },
         default = false,
     },
@@ -263,8 +242,8 @@ configuration_options =
         name = "Show BG Image",
         options =
         {
-            {description = "False", data = false},
-            {description = "True", data = true},
+            {description = "No", data = false},
+            {description = "Yes", data = true},
         },
         default = true,
     },
@@ -273,10 +252,10 @@ configuration_options =
         options =
         {
             {description = "Disabled", data = 0},
-            {description = "AlphaBlended", data = 1},
+            {description = "Alpha Blended", data = 1},
             {description = "Additive", data = 2},
             {description = "Premultiplied", data = 3},
-            {description = "InverseAlpha", data = 4},
+            {description = "Inverse Alpha", data = 4},
         },
         default = 2,
     },
@@ -285,10 +264,10 @@ configuration_options =
         options =
         {
             {description = "Disabled", data = 0},
-            {description = "AlphaBlended", data = 1},
+            {description = "Alpha Blended", data = 1},
             {description = "Additive", data = 2},
             {description = "Premultiplied", data = 3},
-            {description = "InverseAlpha", data = 4},
+            {description = "Inverse Alpha", data = 4},
         },
         default = 3,
     },
@@ -296,8 +275,8 @@ configuration_options =
         name = "Map Clickable",
         options =
         {
-            {description = "False", data = false},
-            {description = "True", data = true},
+            {description = "No", data = false},
+            {description = "Yes", data = true},
         },
         default = true,
     },
@@ -374,8 +353,8 @@ configuration_options =
         name = "Toggle Button Show",
         options =
         {
-            {description = "False", data = false},
-            {description = "True", data = true},
+            {description = "No", data = false},
+            {description = "Yes", data = true},
         },
         default = true,
     },
@@ -419,8 +398,8 @@ configuration_options =
         name = "Config Button Show",
         options =
         {
-            {description = "False", data = false},
-            {description = "True", data = true},
+            {description = "No", data = false},
+            {description = "Yes", data = true},
         },
         default = true,
     },
@@ -464,8 +443,8 @@ configuration_options =
         name = "Save Button Show",
         options =
         {
-            {description = "False", data = false},
-            {description = "True", data = true},
+            {description = "No", data = false},
+            {description = "Yes", data = true},
         },
         default = true,
     },
@@ -512,7 +491,6 @@ configuration_options =
             {description = "Disable", data = "0"},
         },
         default = "1+1+114+0+0+0",
-        -- default = "1+1+0+0+0+0",
     },
     {
         name = "Center Character Key",

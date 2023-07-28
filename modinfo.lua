@@ -21,16 +21,16 @@ Moreover, the original is very steady]],
 }
 description = desc[language] or desc["en"]
 author = "H@mer"
-version = "3.1"
+version = "3.2"
 forumthread = ""
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
 api_version = 10
 priority = 9999
-dont_starve_compatible = false
-reign_of_giants_compatible = false
-shipwrecked_compatible = false
-hamlet_compatible = false
+dont_starve_compatible = true
+reign_of_giants_compatible = true
+shipwrecked_compatible = true
+hamlet_compatible = true
 dst_compatible = true
 client_only_mod = true
 server_only_mod = false
@@ -42,12 +42,12 @@ configuration_options =
         name = "Map Size",
         options =
         {
-            {description = "Tiny",             data = 0.125},
-            {description = "Small",            data = 0.175},
-            {description = "Medium", 		   data = 0.225},
-            {description = "Large",            data = 0.275},
-            {description = "Huge",             data = 0.325},
-            {description = "Giant",            data = 0.375},
+            {description = "Tiny", data = 0.125},
+            {description = "Small", data = 0.175},
+            {description = "Medium", data = 0.225},
+            {description = "Large", data = 0.275},
+            {description = "Huge", data = 0.325},
+            {description = "Giant", data = 0.375},
         },
         default = 0.225,
     },
@@ -55,15 +55,15 @@ configuration_options =
         name = "Position",
         options =
         {
-            {description = "Top Right",          data = "top_right"},
-            {description = "Top Left", 			 data = "top_left"},
-            {description = "Top Center",         data = "top_center"},
-            {description = "Middle Left",        data = "middle_left"},
-            {description = "Middle Center",      data = "middle_center"},
-            {description = "Middle Right",       data = "middle_right"},
-            {description = "Bottom Left",        data = "bottom_left"},
-            {description = "Bottom Center",      data = "bottom_center"},
-            {description = "Bottom Right",       data = "bottom_right"},
+            {description = "Top Right", data = "top_right"},
+            {description = "Top Left", data = "top_left"},
+            {description = "Top Center", data = "top_center"},
+            {description = "Middle Left", data = "middle_left"},
+            {description = "Middle Center", data = "middle_center"},
+            {description = "Middle Right", data = "middle_right"},
+            {description = "Bottom Left", data = "bottom_left"},
+            {description = "Bottom Center", data = "bottom_center"},
+            {description = "Bottom Right", data = "bottom_right"},
         },
         default = "top_left"
     },
@@ -71,37 +71,37 @@ configuration_options =
         name = "Horizontal Margin",
         options =
         {
-            {description = "0",            data = 0},
-            {description = "1",            data = 5},
-            {description = "2",            data = 12.5*1},
-            {description = "3",            data = 12.5*2},
-            {description = "4",            data = 12.5*3},
-            {description = "5",            data = 12.5*4},
-            {description = "6",     	   data = 12.5*5},
-            {description = "7",            data = 12.5*6},
-            {description = "8",            data = 12.5*7},
-            {description = "9",            data = 12.5*8},
-            {description = "10",           data = 12.5*9},
-            {description = "11",           data = 12.5*10},
-            {description = "12",           data = 12.5*11},
-            {description = "13",           data = 12.5*12},
-            {description = "14",           data = 12.5*13},
-            {description = "15",           data = 12.5*14},
-            {description = "16",           data = 12.5*15},
-            {description = "17",           data = 12.5*16},
-            {description = "18",           data = 12.5*17},
-            {description = "19",           data = 12.5*18},
-            {description = "20",           data = 12.5*19},
-            {description = "21",           data = 12.5*20},
-            {description = "22",           data = 12.5*21},
-            {description = "23",           data = 12.5*22},
-            {description = "24",           data = 12.5*23},
-            {description = "25",           data = 12.5*24},
-            {description = "26",           data = 12.5*25},
-            {description = "27",           data = 12.5*26},
-            {description = "28",           data = 12.5*27},
-            {description = "29",           data = 12.5*28},
-            {description = "30",           data = 12.5*29},
+            {description = "0", data = 0},
+            {description = "1", data = 5},
+            {description = "2", data = 12.5*1},
+            {description = "3", data = 12.5*2},
+            {description = "4", data = 12.5*3},
+            {description = "5", data = 12.5*4},
+            {description = "6", data = 12.5*5},
+            {description = "7", data = 12.5*6},
+            {description = "8", data = 12.5*7},
+            {description = "9", data = 12.5*8},
+            {description = "10", data = 12.5*9},
+            {description = "11", data = 12.5*10},
+            {description = "12", data = 12.5*11},
+            {description = "13", data = 12.5*12},
+            {description = "14", data = 12.5*13},
+            {description = "15", data = 12.5*14},
+            {description = "16", data = 12.5*15},
+            {description = "17", data = 12.5*16},
+            {description = "18", data = 12.5*17},
+            {description = "19", data = 12.5*18},
+            {description = "20", data = 12.5*19},
+            {description = "21", data = 12.5*20},
+            {description = "22", data = 12.5*21},
+            {description = "23", data = 12.5*22},
+            {description = "24", data = 12.5*23},
+            {description = "25", data = 12.5*24},
+            {description = "26", data = 12.5*25},
+            {description = "27", data = 12.5*26},
+            {description = "28", data = 12.5*27},
+            {description = "29", data = 12.5*28},
+            {description = "30", data = 12.5*29},
         },
         default = 12.5*5
     },
@@ -203,8 +203,8 @@ configuration_options =
         name = "Close when open chest",
         options =
         {
-            {description = "False", 		  data = false},
-            {description = "True",            data = true},
+            {description = "No", 		  data = false},
+            {description = "Yes",            data = true},
         },
         default = false,
     },
@@ -212,8 +212,8 @@ configuration_options =
         name = "Pause if focused",
         options =
         {
-            {description = "False",        data = false},
-            {description = "True", 		   data = true},
+            {description = "No",        data = false},
+            {description = "Yes", 		   data = true},
         },
         default = false,
     },
