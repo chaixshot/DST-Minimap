@@ -29,7 +29,7 @@ local ModConfig = Class(Screen, function(self, IsDST)
 	self.quicksaving = false
 	if self.IsDST then
 		self.CONTROL_PAGELEFT = CONTROL_SCROLLBACK
-		self.CONTROL_PAGERIGHT = CONTROL_FOCUS_RIGHT
+		self.CONTROL_PAGERIGHT = CONTROL_SCROLLFWD
 	else
 		self.CONTROL_PAGELEFT = CONTROL_PAGELEFT
 		self.CONTROL_PAGERIGHT = CONTROL_PAGERIGHT
@@ -43,10 +43,7 @@ function ModConfig:UpdateOptions()
         for i, v in ipairs(self.configfull) do
             -- Only show the option if it matches our format exactly
             if v.name and v.options and (v.saved ~= nil or v.default ~= nil) then
-                table.insert(
-                    options,
-                    {name = v.name, label = v.label, options = v.options, default = v.default, value = v.saved}
-                )
+                table.insert(options, {name = v.name, label = v.label, options = v.options, default = v.default, value = v.saved, hover = v.hover})
             end
         end
     end
@@ -191,21 +188,34 @@ function ModConfig:SetKeyChar(_, key, down, noclose)
 end
 
 function ModConfig:MapControl(idx, name, value)
-    self.mapping_idx = idx
-
-    local default_text = string.format(STRINGS.UI.OPTIONS.DEFAULT..": %s", value)
+    local deviceId = 0
+    local controlId = 0
+    local default_text = string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, value)
     local body_text = STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT .. "\n\n" .. default_text
     local popup = PopupDialogScreen(name, body_text, {
 		{text=STRINGS.UI.CONTROLSSCREEN.CANCEL, cb=function()
+            self.is_mapping = false
+            self.mapping_idx = nil
             TheFrontEnd:PopScreen()
+            
+            for k,v in pairs(self.inputhandlers) do
+                v:Remove()
+            end
         end}
 	})
-
-    popup.OnRawKey = function(_, key, down)
-        self:SetKeyChar(_, key, down)
-	end	
     
     TheFrontEnd:PushScreen(popup)
+
+    TheInputProxy:MapControl(deviceId, controlId)
+    self.is_mapping = true
+    self.mapping_idx = idx
+    
+    self.inputhandlers = {}
+    table.insert(self.inputhandlers, TheInput:AddControlMappingHandler(
+        function(deviceId, controlId, inputId, hasChanged)
+            self:OnControlMapped(deviceId, controlId, inputId, hasChanged)
+        end
+    ))
 end
 
 local modkey_conv_tbl = {
@@ -281,6 +291,50 @@ function ModConfig:JoinFromInputs(device, numInputs, inputs)
     end
 
     return new_text_value, new_value
+end
+
+function ModConfig:OnControlMapped(deviceId, controlId, inputId, hasChanged)
+    if self.is_mapping then 
+        self.inst:DoTaskInTime(0.01, function() 
+            -- print("Control [" .. controlId .. "] is now [" .. inputId .. "]", hasChanged, debugstack())
+
+            -- removes the "press a button to bind" popup screen. This is not needed when clearing a binding because there is no popup
+            if inputId ~= 0xFFFFFFFF then
+                TheFrontEnd:PopScreen()
+            end
+            
+            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+            if hasChanged then
+                for k,v in pairs(self.optionwidgets) do
+                    if v.root.button and v.root.button.option_idx == self.mapping_idx then
+                        local device, numInputs, input1, input2, input3, input4, intParam = TheInputProxy:GetLocalizedControl(deviceId, controlId, false, true)
+                        local new_text_value, new_value = self:JoinFromInputs(device, numInputs, {[1]=input1, [2]=input2, [3]=input3, [4]=input4})
+                        v.root.button:SetText(new_text_value)
+                        if options[self.mapping_idx].default ~= new_value then
+                            v.root.button:SetTextColour(UICOLOURS.RED)
+                            v.root.button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+                        else
+                            v.root.button:SetTextColour(UICOLOURS.GOLD)
+                            v.root.button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+                        end
+                        options[self.mapping_idx].value = new_value
+                    end
+                end
+            end
+
+            -- set the dirty flag (if something changed) if it hasn't yet been set
+            if not self:IsDirty() and hasChanged then
+                self:MakeDirty()
+            end
+
+            self.is_mapping = false
+            self.mapping_idx = nil
+            
+            for k,v in pairs(self.inputhandlers) do
+                v:Remove()
+            end
+        end)
+    end 
 end
 
 function ModConfig:IsOpen()
@@ -470,21 +524,11 @@ function ModConfig:InitializeModInfo(modname, modinfoname)
             --table.insert( self.failedmods, {name=modname,error=r} )
             env.failed = true
         elseif env.api_version == nil or env.api_version < MOD_API_VERSION then
-            local old =
-                "Mod " ..
-                modname ..
-                    " was built for an older version of the game and requires updating. (api_version is version " ..
-                        tostring(env.api_version) .. ", game is version " .. MOD_API_VERSION .. ".)"
-            modinfo_message =
-                modinfo_message ..
-                "Old API! (mod: " .. tostring(env.api_version) .. " game: " .. MOD_API_VERSION .. ") "
+            local old = "Mod " .. modname .. " was built for an older version of the game and requires updating. (api_version is version " .. tostring(env.api_version) .. ", game is version " .. MOD_API_VERSION .. ".)"
+            modinfo_message = modinfo_message .. "Old API! (mod: " .. tostring(env.api_version) .. " game: " .. MOD_API_VERSION .. ") "
             env.old = true
         elseif env.api_version > MOD_API_VERSION then
-            local old =
-                "api_version for " ..
-                modname ..
-                    " is in the future, please set to the current version. (api_version is version " ..
-                        env.api_version .. ", game is version " .. MOD_API_VERSION .. ".)"
+            local old = "api_version for " .. modname .. " is in the future, please set to the current version. (api_version is version " .. env.api_version .. ", game is version " .. MOD_API_VERSION .. ".)"
             print("Error loading mod: " .. ModInfoname(modname) .. "!\n " .. old .. "\n")
             --table.insert( self.failedmods, {name=modname,error=old} )
             env.failed = true
@@ -506,18 +550,10 @@ function ModConfig:InitializeModInfo(modname, modinfoname)
                 if env[v] == nil then
                     if v == "dont_starve_compatible" then
                         -- Print a warning but let the mod load
-                        print(
-                            "WARNING loading modinfo.lua: " ..
-                                modname ..
-                                    " does not specify if it is compatible with the base game. It may not work properly."
-                        )
+                        print( "WARNING loading modinfo.lua: " .. modname .. " does not specify if it is compatible with the base game. It may not work properly." )
                     elseif v == "reign_of_giants_compatible" then
                         -- Print a warning but let the mod load
-                        print(
-                            "WARNING loading modinfo.lua: " ..
-                                modname ..
-                                    " does not specify if it is compatible with Reign of Giants. It may not work properly."
-                        )
+                        print( "WARNING loading modinfo.lua: " .. modname .. " does not specify if it is compatible with Reign of Giants. It may not work properly." )
                     elseif v == "configuration_options" then
                         -- Do nothing. It's perfectly fine not to have config options!
                     else
@@ -683,8 +719,8 @@ function ModConfig:ConfirmRevert(callback)
         {
             text = STRINGS.UI.MODSSCREEN.YES,
             cb = callback or function()
-                    TheFrontEnd:PopScreen()
-                end
+                TheFrontEnd:PopScreen()
+            end
         },
         {
             text = STRINGS.UI.MODSSCREEN.NO,
@@ -697,13 +733,11 @@ end
 
 function ModConfig:Cancel()
     if self:IsDirty() and not (self.started_default and self:IsDefaultSettings()) and not self.minimapwidget:IsDirty() then
-        self:ConfirmRevert(
-            function()
-                TheFrontEnd:PopScreen()
-                self:MakeDirty(false)
-                self:Cancel()
-            end
-        )
+        self:ConfirmRevert(function()
+            TheFrontEnd:PopScreen()
+            self:MakeDirty(false)
+            self:Cancel()
+        end)
     else
         if not self.minimapwidget:IsDirty() then
             self:MakeDirty(false)
@@ -783,7 +817,7 @@ function ModConfig:Scroll(dir)
     self:RefreshOptions()
 end
 
-local function AddHoverText(widget, params, labelText)
+function ModConfig:AddHoverText(widget, params, labelText)
 	params = params or {}
 	
 	-- Widget class defaults these on its own in SetHoverText
@@ -904,7 +938,13 @@ function ModConfig:RefreshOptions()
                     function(value, oldvalue) -- onchanged_fn
                     end
                 ))
-                AddHoverText(spinner, {offset_x = -4, offset_y = 50}, (options[idx].hover or ""))
+                self:AddHoverText(spinner.label, {offset_x = -4, offset_y = 70}, (options[idx].hover or ""))
+                
+                local default_value = options[idx].value
+                if default_value == nil then
+                    default_value = options[idx].default
+                end
+                spinner.spinner:SetSelected(default_value)
                 
                 spinner.spinner:SetOnChangedFn(function(value, oldvalue)
                     options[idx].value = value
@@ -918,13 +958,25 @@ function ModConfig:RefreshOptions()
                             spinner.spinner:SetTextColour(UICOLOURS.BLACK) -- Black
                         end
                     end
+                    
+                    for k, v in ipairs(options[idx].options) do
+                        if value == v.data then
+                            self:AddHoverText(spinner.spinner, {offset_x = -4, offset_y = 70}, (v.hover or ""))
+                            break
+                        end
+                    end
+                    
+                    if options[idx].name == "Updates Per Second" then
+                        self.minimapwidget:SetUPS(value)
+                    end
                 end)
                 
-                local default_value = options[idx].value
-                if default_value == nil then
-                    default_value = options[idx].default
+                for k, v in ipairs(options[idx].options) do
+                    if default_value == v.data then
+                        self:AddHoverText(spinner.spinner, {offset_x = -4, offset_y = 70}, (v.hover or ""))
+                        break
+                    end
                 end
-                spinner.spinner:SetSelected(default_value)
 
                 if options[idx].value and options[idx].default ~= options[idx].value then
                     spinner.spinner:SetTextColour(WEBCOLOURS.GREEN)

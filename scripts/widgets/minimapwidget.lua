@@ -199,14 +199,8 @@ function MiniMapWidget:PositionToggleButton(dx, dy)
     self.togglebuttonsize = {w = togglebuttonsize_w * self.modconfig.btn_scale, h = togglebuttonsize_h * self.modconfig.btn_scale}
     self.togglebuttonpos_horiz = 60
 
-    self.togglebuttonpos_vert =
-        -self.togglebuttonsize.h / 2 - (self.mapsize_view.h - self.togglebuttonsize.h / 2 * 2) / 10 * self.modconfig.togglebutton_vert_pos
-    local newbuttonpos =
-        Point(
-        -self.mapsize_view.w / 2 + self.togglebuttonpos_horiz + dx,
-        self.mapsize_view.h / 2 + self.togglebuttonpos_vert + dy,
-        0
-    )
+    self.togglebuttonpos_vert = -self.togglebuttonsize.h / 2 - (self.mapsize_view.h - self.togglebuttonsize.h / 2 * 2) / 10 * self.modconfig.togglebutton_vert_pos
+    local newbuttonpos = Point( -self.mapsize_view.w / 2 + self.togglebuttonpos_horiz + dx, self.mapsize_view.h / 2 + self.togglebuttonpos_vert + dy, 0 )
     self.togglebutton.o_pos = newbuttonpos
     self.togglebutton:SetPosition(newbuttonpos:Get())
     self:ShowHideButtons()
@@ -225,15 +219,8 @@ function MiniMapWidget:PositionConfigButton(dx, dy)
     }
     self.configbtnpos_horiz = 60
 
-    self.configbtnpos_vert =
-        -self.configbtnsize.h / 2 -
-        (self.mapsize_view.h - self.configbtnsize.h / 2 * 2) / 10 * self.modconfig.configbtn_vert_pos
-    local newbuttonpos =
-        Point(
-        -self.mapsize_view.w / 2 + self.configbtnpos_horiz + dx,
-        self.mapsize_view.h / 2 + self.configbtnpos_vert + dy,
-        0
-    )
+    self.configbtnpos_vert = -self.configbtnsize.h / 2 - (self.mapsize_view.h - self.configbtnsize.h / 2 * 2) / 10 * self.modconfig.configbtn_vert_pos
+    local newbuttonpos = Point( -self.mapsize_view.w / 2 + self.configbtnpos_horiz + dx, self.mapsize_view.h / 2 + self.configbtnpos_vert + dy, 0 )
     self.configbtn.o_pos = newbuttonpos
     self.configbtn:SetPosition(newbuttonpos:Get())
     self:ShowHideButtons()
