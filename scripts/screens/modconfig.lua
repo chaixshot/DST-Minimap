@@ -27,13 +27,8 @@ local ModConfig = Class(Screen, function(self, IsDST)
 	self.minimapwidget = nil
 	self.modmain_updatestate_callback = nil
 	self.quicksaving = false
-	if self.IsDST then
-		self.CONTROL_PAGELEFT = CONTROL_SCROLLBACK
-		self.CONTROL_PAGERIGHT = CONTROL_SCROLLFWD
-	else
-		self.CONTROL_PAGELEFT = CONTROL_PAGELEFT
-		self.CONTROL_PAGERIGHT = CONTROL_PAGERIGHT
-	end
+	self.CONTROL_PAGELEFT = CONTROL_SCROLLBACK
+    self.CONTROL_PAGERIGHT = CONTROL_SCROLLFWD
 end)
 
 function ModConfig:UpdateOptions()
@@ -59,7 +54,8 @@ function ModConfig:Open()
     end
 
     Screen._ctor(self, "ModConfig")
-    SetPause(true, "inv")
+    SetPause(true, "pause")
+    SetAutopaused(true)
     self.open = true
 
     self.left_spinners = {}
@@ -155,6 +151,7 @@ function ModConfig:Close()
     TheFrontEnd:PopScreen()
     if #TheFrontEnd.screenstack < 2 then
         SetPause(false)
+        SetAutopaused(false)
     end
     self.open = false
     TheInputProxy:StopMappingControls()
@@ -295,15 +292,16 @@ end
 
 function ModConfig:OnControlMapped(deviceId, controlId, inputId, hasChanged)
     if self.is_mapping then 
-        self.inst:DoTaskInTime(0.01, function() 
-            -- print("Control [" .. controlId .. "] is now [" .. inputId .. "]", hasChanged, debugstack())
+        -- print("Control [" .. controlId .. "] is now [" .. inputId .. "]", hasChanged, debugstack())
 
-            -- removes the "press a button to bind" popup screen. This is not needed when clearing a binding because there is no popup
-            if inputId ~= 0xFFFFFFFF then
-                TheFrontEnd:PopScreen()
-            end
-            
-            TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+        -- removes the "press a button to bind" popup screen. This is not needed when clearing a binding because there is no popup
+        if inputId ~= 0xFFFFFFFF then
+            TheFrontEnd:PopScreen()
+        end
+        
+        TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
+        
+        self.inst:DoTaskInTime(0.01, function() 
             if hasChanged then
                 for k,v in pairs(self.optionwidgets) do
                     if v.root.button and v.root.button.option_idx == self.mapping_idx then
