@@ -21,7 +21,7 @@ Moreover, the original is very steady]],
 }
 description = desc[language] or desc["en"]
 author = "H@mer"
-version = "3.3.5"
+version = "3.3.6"
 forumthread = ""
 icon = "modicon.tex"
 icon_atlas = "images/modicon.xml"

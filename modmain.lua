@@ -17,26 +17,18 @@ local function GetTheWorld()
     return IsDST and _G.TheWorld or _G.GetWorld()
 end
 
-local function AddMiniMap_main(inst)
+local function AddMiniMap(controls)
     -- for some reason, without this the game would crash without an error when calling controls.top_root:AddChild
     -- too lazy to track down the cause, so just using this workaround
-    inst:DoTaskInTime(0, function(inst)
-        if GetThePlayer() ~= inst then
-            return
-        end
-
-        local player = inst
-
+    controls.inst:DoTaskInTime(0, function()
         -- add the minimap widget and set its position
         local MiniMapWidget = require "widgets/minimapwidget"
         local ModConfig = require "screens/modconfig"
 
-        local controls = player.HUD.controls
-
         local modconfig = ModConfig(IsDST)
         modconfig:Init()
 
-        controls.minimapwidget = controls.top_root:AddChild(MiniMapWidget(IsDST, player, GetThePlayer, GetTheWorld, modconfig))
+        controls.minimapwidget = controls.top_root:AddChild(MiniMapWidget(IsDST, GetThePlayer, GetTheWorld, modconfig))
         modconfig.minimapwidget = controls.minimapwidget
 
         local screensize = {TheSim:GetScreenSize()}
@@ -241,7 +233,7 @@ local function AddMiniMap_main(inst)
         minimapwidget = controls.minimapwidget
     end)
 end
-AddPlayerPostInit(AddMiniMap_main)
+AddClassPostConstruct("widgets/controls", AddMiniMap)
 
 -- special case: ToggleMap gets bypassed when the map gets hidden while on the map screen
 local MapScreen = require "screens/mapscreen"

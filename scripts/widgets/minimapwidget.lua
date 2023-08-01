@@ -2,10 +2,9 @@ local Widget = require "widgets/widget"
 local Image = require "widgets/image"
 local TEMPLATES = require "widgets/redux/templates"
 
-local MiniMapWidget = Class(Widget, function(self, IsDST, owner, playerfn, worldfn, modconfig)
+local MiniMapWidget = Class(Widget, function(self, IsDST, playerfn, worldfn, modconfig)
 	Widget._ctor(self, "MiniMapWidget")
 	self.IsDST = IsDST
-	self.owner = owner
 	self.playerfn = playerfn
 	self.worldfn = worldfn
 	self.adjustvalue = 0.225 -- The mysterious value
