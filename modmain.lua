@@ -243,30 +243,6 @@ local function AddMiniMap_main(inst)
 end
 AddPlayerPostInit(AddMiniMap_main)
 
-function AddMiniMap_mapwidget(inst)
-    -- keep track of zooming while on the map screen
-    --local MapWidget = require "widgets/mapwidget"
-
-    MapWidget_OnZoomIn_base = inst.OnZoomIn
-    inst.OnZoomIn = function(self)
-        MapWidget_OnZoomIn_base(self)
-        if self.shown then
-            local controls = GetThePlayer().HUD.controls
-            controls.minimapwidget.mapscreenzoom = math.max(0, controls.minimapwidget.mapscreenzoom - 1)
-        end
-    end
-
-    MapWidget_OnZoomOut_base = inst.OnZoomOut
-    inst.OnZoomOut = function(self)
-        MapWidget_OnZoomOut_base(self)
-        if self.shown then
-            local controls = GetThePlayer().HUD.controls
-            controls.minimapwidget.mapscreenzoom = controls.minimapwidget.mapscreenzoom + 1
-        end
-    end
-end
-AddClassPostConstruct("widgets/mapwidget", AddMiniMap_mapwidget)
-
 -- special case: ToggleMap gets bypassed when the map gets hidden while on the map screen
 local MapScreen = require "screens/mapscreen"
 MapScreen_OnControl_base = MapScreen.OnControl
@@ -277,5 +253,26 @@ MapScreen.OnControl = function( self, control, down, ... )
 		minimapwidget:Show()
 	end
 
+	return unpack(returnValues)
+end
+
+-- keep track of zooming while on the map screen
+local MapWidget = require "widgets/mapwidget"
+
+MapWidget_OnZoomIn_base = MapWidget.OnZoomIn
+MapWidget.OnZoomIn = function(self, deltazoom, ...)
+	local returnValues = {MapWidget_OnZoomIn_base( self, deltazoom, ... )}
+	if minimapwidget and self.shown then
+		minimapwidget.mapscreenzoom = math.max(0,minimapwidget.mapscreenzoom + (deltazoom or -0.1))
+	end
+	return unpack(returnValues)
+end
+
+MapWidget_OnZoomOut_base = MapWidget.OnZoomOut
+MapWidget.OnZoomOut = function(self, deltazoom, ...)
+	local returnValues = {MapWidget_OnZoomOut_base( self, deltazoom, ... )}
+	if minimapwidget and self.shown then
+		minimapwidget.mapscreenzoom = minimapwidget.mapscreenzoom + (deltazoom or 0.1)
+	end
 	return unpack(returnValues)
 end
