@@ -1,6 +1,13 @@
+IsDST = _G.MOD_API_VERSION == 10
 local Widget = require "widgets/widget"
 local Image = require "widgets/image"
-local TEMPLATES = require "widgets/redux/templates"
+local TEMPLATES
+local ImageButton
+if IsDST then
+    TEMPLATES = require "widgets/redux/templates"
+else
+    ImageButton = require "widgets/imagebutton"
+end
 
 local MiniMapWidget = Class(Widget, function(self, IsDST, playerfn, worldfn, modconfig)
 	Widget._ctor(self, "MiniMapWidget")
@@ -23,33 +30,39 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, playerfn, worldfn, mod
 	self.img:SetSize(self.mapsize.w, self.mapsize.h, 0)
 	self.bg:SetSize(self.mapsize.w, self.mapsize.h, 0)
 	self.bg:SetClickable(false)
-	self.togglebutton = self:AddChild(TEMPLATES.StandardButton(
-		function()
-			self:ToggleOpen()
-		end,
-		"togglebutton",
-		{200, 70}
-    ))
-    self.togglebutton:SetFont(CHATFONT)
-	self.quicksavebtn = self:AddChild(TEMPLATES.StandardButton(
-		function()
-			self.modconfig:QuickSave()
-            self:PositionQuickSaveButton(0, 0)
-		end,
-		"quicksavebtn",
-		{200, 70}
-    ))
-    self.quicksavebtn:SetFont(CHATFONT)
-	self.configbtn = self:AddChild(TEMPLATES.StandardButton(
-		function()
-			if self.modconfig:Open() then
-                TheFrontEnd:PushScreen(self.modconfig)
-            end
-		end,
-		"configbtn",
-		{200, 70}
-    ))
-    self.configbtn:SetFont(CHATFONT)
+    if IsDST then
+        self.togglebutton = self:AddChild(TEMPLATES.StandardButton(function()
+        end, "togglebutton", {200, 70}
+        ))
+        self.togglebutton:SetFont(CHATFONT)
+        
+        self.quicksavebtn = self:AddChild(TEMPLATES.StandardButton(function()
+        end, "quicksavebtn", {200, 70}
+        ))
+        self.quicksavebtn:SetFont(CHATFONT)
+        
+        self.configbtn = self:AddChild(TEMPLATES.StandardButton(function()
+        end, "configbtn", {200, 70}
+        ))
+        self.configbtn:SetFont(CHATFONT)
+    else
+        self.togglebutton = self:AddChild(ImageButton())
+        self.quicksavebtn = self:AddChild(ImageButton())
+        self.configbtn = self:AddChild(ImageButton())
+    end
+    self.togglebutton:SetOnClick(function()
+        self:ToggleOpen()
+    end)
+    self.quicksavebtn:SetOnClick(function()
+        self.modconfig:QuickSave()
+        self:PositionQuickSaveButton(0, 0)
+    end)
+    self.configbtn:SetOnClick(function()
+        if self.modconfig:Open() then
+            TheFrontEnd:PushScreen(self.modconfig)
+        end
+    end)
+    
 	-- ups stuff, needs to be before SetOpen()
 	self.ups = 0 -- 0 if disabled, otherwise delay till next update
 	self.task_ups = nil -- the next update task
@@ -604,18 +617,8 @@ function MiniMapWidget:OnUpdate(dt)
 
             new_x, new_y = self:ResizeMapView(new_x, new_y)
             local scrn_w, scrn_h = TheSim:GetScreenSize()
-            local mapscale_gap_w =
-                self.adjustvalue * scrn_w / self.mapsize.w /
-                (2 ^
-                    (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) /
-                        math.log(1 / self.uvscalechangelevel1) -
-                        1))
-            local mapscale_gap_h =
-                self.adjustvalue * scrn_h / self.mapsize.h /
-                (2 ^
-                    (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) /
-                        math.log(1 / self.uvscalechangelevel1) -
-                        1))
+            local mapscale_gap_w = self.adjustvalue * scrn_w / self.mapsize.w / (2 ^ (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) / math.log(1 / self.uvscalechangelevel1) - 1))
+            local mapscale_gap_h = self.adjustvalue * scrn_h / self.mapsize.h / (2 ^ (math.log((-(self.uvscale * (1 - 1 / self.uvscalechangelevel1)) / 1 + 1)) / math.log(1 / self.uvscalechangelevel1) - 1))
 
             local mapcenter_gap_after_x = self.mapcenter_gap.x
             local mapcenter_gap_after_y = self.mapcenter_gap.y
