@@ -14,6 +14,7 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, playerfn, worldfn, mod
 	self.IsDST = IsDST
 	self.playerfn = playerfn
 	self.worldfn = worldfn
+	self.uvscale = 1
 	self.adjustvalue = 0.225 -- The mysterious value
 	self.modconfig = modconfig
 	self.minimap = worldfn().minimap.MiniMap
