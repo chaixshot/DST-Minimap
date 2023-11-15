@@ -153,7 +153,7 @@ end
 function MiniMapWidget:ShowHideButtons()
     if self.open then
         if self.focus then
-            if self.modconfig.togglebutton_show then
+            if self.modconfig.togglebutton_show and self.modconfig.map_clickable then
                 self.togglebutton:Show()
             else
                 self.togglebutton:Hide()
@@ -174,7 +174,7 @@ function MiniMapWidget:ShowHideButtons()
                 self.configbtn:Hide()
                 self.quicksavebtn:Hide()
             else
-                if self.modconfig.togglebutton_show then
+                if self.modconfig.togglebutton_show and self.modconfig.map_clickable then
                     self.togglebutton:Show()
                 else
                     self.togglebutton:Hide()
@@ -192,7 +192,7 @@ function MiniMapWidget:ShowHideButtons()
             end
         end
     else
-        if self.modconfig.togglebutton_show then
+        if self.modconfig.togglebutton_show and self.modconfig.map_clickable then
             self.togglebutton:Show()
         else
             self.togglebutton:Hide()
@@ -447,7 +447,7 @@ function MiniMapWidget:OnGainFocus()
 
     self:ShowHideButtons()
     if self:IsOpen() then
-        if self.modconfig.togglebutton_show then
+        if self.modconfig.togglebutton_show and self.modconfig.map_clickable then
             self.togglebutton:Show()
         else
             self.togglebutton:Hide()
