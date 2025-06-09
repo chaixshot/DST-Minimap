@@ -10,38 +10,38 @@ else
 end
 
 local MiniMapWidget = Class(Widget, function(self, IsDST, playerfn, worldfn, modconfig)
-	Widget._ctor(self, "MiniMapWidget")
-	self.IsDST = IsDST
-	self.playerfn = playerfn
-	self.worldfn = worldfn
-	self.uvscale = 1
-	self.adjustvalue = 0.225 -- The mysterious value
-	self.modconfig = modconfig
-	self.minimap = worldfn().minimap.MiniMap
-	self.bg = self:AddChild(Image("images/hud.xml", "map.tex"))
-	self.img = self:AddChild(Image())
-	self:UpdateTexture()
-	self.mapsize_orig_w, self.mapsize_orig_h = self.bg:GetSize()
-	self.mapsize = {
-		w = self.mapsize_orig_w * self.modconfig.mapscale * self.modconfig.scale_horiz,
-		h = self.mapsize_orig_h * self.modconfig.mapscale * self.modconfig.scale_vert
-	}
-	self.mappos_gap = {x = 0, y = 0}
-	self.mapsize_view = {w = self.mapsize.w, h = self.mapsize.h}
-	self.img:SetSize(self.mapsize.w, self.mapsize.h, 0)
-	self.bg:SetSize(self.mapsize.w, self.mapsize.h, 0)
-	self.bg:SetClickable(false)
+    Widget._ctor(self, "MiniMapWidget")
+    self.IsDST = IsDST
+    self.playerfn = playerfn
+    self.worldfn = worldfn
+    self.uvscale = 1
+    self.adjustvalue = 0.225 -- The mysterious value
+    self.modconfig = modconfig
+    self.minimap = worldfn().minimap.MiniMap
+    self.bg = self:AddChild(Image("images/hud.xml", "map.tex"))
+    self.img = self:AddChild(Image())
+    self:UpdateTexture()
+    self.mapsize_orig_w, self.mapsize_orig_h = self.bg:GetSize()
+    self.mapsize = {
+        w = self.mapsize_orig_w * self.modconfig.mapscale * self.modconfig.scale_horiz,
+        h = self.mapsize_orig_h * self.modconfig.mapscale * self.modconfig.scale_vert
+    }
+    self.mappos_gap = {x = 0, y = 0}
+    self.mapsize_view = {w = self.mapsize.w, h = self.mapsize.h}
+    self.img:SetSize(self.mapsize.w, self.mapsize.h, 0)
+    self.bg:SetSize(self.mapsize.w, self.mapsize.h, 0)
+    self.bg:SetClickable(false)
     if IsDST then
         self.togglebutton = self:AddChild(TEMPLATES.StandardButton(function()
         end, "togglebutton", {200, 70}
         ))
         self.togglebutton:SetFont(CHATFONT)
-        
+
         self.quicksavebtn = self:AddChild(TEMPLATES.StandardButton(function()
         end, "quicksavebtn", {200, 70}
         ))
         self.quicksavebtn:SetFont(CHATFONT)
-        
+
         self.configbtn = self:AddChild(TEMPLATES.StandardButton(function()
         end, "configbtn", {200, 70}
         ))
@@ -63,28 +63,28 @@ local MiniMapWidget = Class(Widget, function(self, IsDST, playerfn, worldfn, mod
             TheFrontEnd:PushScreen(self.modconfig)
         end
     end)
-    
-	-- ups stuff, needs to be before SetOpen()
-	self.ups = 0 -- 0 if disabled, otherwise delay till next update
-	self.task_ups = nil -- the next update task
-	self:SetOpen(true)
-	self.mapscreenzoom = 1
-	self.lastpos = nil
-	self.lastpos_bg = nil
-	self.mapcenter_gap = Point(0, 0)
-	self.dirty = false
-	--self.hudsize = PlayerProfile:GetHUDSize()
-	self.uvscalechangelevel1 = 2.0
-	self.uvscalechangelevel2 = 0.1
 
-	self:UpdateState()
-	self:PositionMiniMap()
-	local newmappos_x, newmappos_y = self:ResizeMapView()
-	self:SetPosition(newmappos_x, newmappos_y)
-	self:ResetOffset()
+    -- ups stuff, needs to be before SetOpen()
+    self.ups = 0 -- 0 if disabled, otherwise delay till next update
+    self.task_ups = nil -- the next update task
+    self:SetOpen(true)
+    self.mapscreenzoom = 1
+    self.lastpos = nil
+    self.lastpos_bg = nil
+    self.mapcenter_gap = Point(0, 0)
+    self.dirty = false
+    --self.hudsize = PlayerProfile:GetHUDSize()
+    self.uvscalechangelevel1 = 2.0
+    self.uvscalechangelevel2 = 0.1
 
-	self:StartUpdating()
-	self:Show()
+    self:UpdateState()
+    self:PositionMiniMap()
+    local newmappos_x, newmappos_y = self:ResizeMapView()
+    self:SetPosition(newmappos_x, newmappos_y)
+    self:ResetOffset()
+
+    self:StartUpdating()
+    self:Show()
 end)
 
 function MiniMapWidget:MakeDirty(dirty)
@@ -213,7 +213,7 @@ function MiniMapWidget:PositionToggleButton(dx, dy)
     self.togglebuttonpos_horiz = 60
 
     self.togglebuttonpos_vert = -self.togglebuttonsize.h / 2 - (self.mapsize_view.h - self.togglebuttonsize.h / 2 * 2) / 10 * self.modconfig.togglebutton_vert_pos
-    local newbuttonpos = Point( -self.mapsize_view.w / 2 + self.togglebuttonpos_horiz + dx, self.mapsize_view.h / 2 + self.togglebuttonpos_vert + dy, 0 )
+    local newbuttonpos = Point(-self.mapsize_view.w / 2 + self.togglebuttonpos_horiz + dx, self.mapsize_view.h / 2 + self.togglebuttonpos_vert + dy, 0)
     self.togglebutton.o_pos = newbuttonpos
     self.togglebutton:SetPosition(newbuttonpos:Get())
     self:ShowHideButtons()
@@ -233,7 +233,7 @@ function MiniMapWidget:PositionConfigButton(dx, dy)
     self.configbtnpos_horiz = 60
 
     self.configbtnpos_vert = -self.configbtnsize.h / 2 - (self.mapsize_view.h - self.configbtnsize.h / 2 * 2) / 10 * self.modconfig.configbtn_vert_pos
-    local newbuttonpos = Point( -self.mapsize_view.w / 2 + self.configbtnpos_horiz + dx, self.mapsize_view.h / 2 + self.configbtnpos_vert + dy, 0 )
+    local newbuttonpos = Point(-self.mapsize_view.w / 2 + self.configbtnpos_horiz + dx, self.mapsize_view.h / 2 + self.configbtnpos_vert + dy, 0)
     self.configbtn.o_pos = newbuttonpos
     self.configbtn:SetPosition(newbuttonpos:Get())
     self:ShowHideButtons()
@@ -390,7 +390,7 @@ function MiniMapWidget:SetOpen(state)
 
     self.configbtn:SetText("Configure Mod") -- Config Button --
     self.quicksavebtn:SetText("Save Config") -- Quick Save Button --
-        
+
     if state then
         self.open = true
 
@@ -410,7 +410,7 @@ function MiniMapWidget:SetOpen(state)
     else
         self.open = false
 
-        self.togglebutton:SetText("Open Minimap")  -- Toggle Button --
+        self.togglebutton:SetText("Open Minimap") -- Toggle Button --
 
         -- Show/Hide Buttons
         self:ShowHideButtons()
@@ -425,15 +425,15 @@ function MiniMapWidget:IsOpen()
     return self.open
 end
 
-function MiniMapWidget:OnControl(control, down )
-	if MiniMapWidget._base.OnControl(self, control, down) then return true end
-	if down and control == CONTROL_MAP_ZOOM_IN then
-		self:OnZoomIn()
-		return true
-	elseif down and control == CONTROL_MAP_ZOOM_OUT then
-		self:OnZoomOut()
-		return true
-	end
+function MiniMapWidget:OnControl(control, down)
+    if MiniMapWidget._base.OnControl(self, control, down) then return true end
+    if down and control == CONTROL_MAP_ZOOM_IN then
+        self:OnZoomIn()
+        return true
+    elseif down and control == CONTROL_MAP_ZOOM_OUT then
+        self:OnZoomOut()
+        return true
+    end
 end
 
 function MiniMapWidget:OnGainFocus()
@@ -771,18 +771,18 @@ function MiniMapWidget:ScheduleUpdate()
             self.minimap:ToggleVisibility()
         end
         self:StopUpdatingAndReschedule()
-	end)
+    end)
 end
 
 -- schedule task ending minimap updating
 -- assumes ups throttling is enabled
 function MiniMapWidget:StopUpdatingAndReschedule()
     self.task_ups = self.inst:DoTaskInTime(0, function()
-		if self.minimap:IsVisible() then
-			self.minimap:ToggleVisibility()
-		end
-		self:ScheduleUpdate()
-	end)
+        if self.minimap:IsVisible() then
+            self.minimap:ToggleVisibility()
+        end
+        self:ScheduleUpdate()
+    end)
 end
 
 function MiniMapWidget:SetUPS(ups)

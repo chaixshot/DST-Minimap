@@ -46,23 +46,23 @@ local function AddMiniMap(controls)
         end
 
         -- show and hide the minimap whenever the map gets toggled
-		local ToggleMap_base = controls.ToggleMap
-		controls.ToggleMap = function(self, ... )
-			local wasvisible = controls.minimapwidget:IsVisible()
+        local ToggleMap_base = controls.ToggleMap
+        controls.ToggleMap = function(self, ...)
+            local wasvisible = controls.minimapwidget:IsVisible()
 
-			if wasvisible then
-				controls.minimapwidget:DisableMinimapUpdating()
-				controls.minimapwidget:Hide()
-			end
+            if wasvisible then
+                controls.minimapwidget:DisableMinimapUpdating()
+                controls.minimapwidget:Hide()
+            end
 
-			local returnValues = {ToggleMap_base(self, ... )}
+            local returnValues = {ToggleMap_base(self, ...)}
 
-			if not wasvisible then
-				controls.minimapwidget:EnableMinimapUpdating()
-				controls.minimapwidget:Show()
-			end
-			return unpack(returnValues)
-		end
+            if not wasvisible then
+                controls.minimapwidget:EnableMinimapUpdating()
+                controls.minimapwidget:Show()
+            end
+            return unpack(returnValues)
+        end
 
         -- HUD Size changes and re-position minimap
         local lasthudsize = nil
@@ -228,7 +228,7 @@ local function AddMiniMap(controls)
                 end
             end
         end)
-        
+
         controls.minimapwidget:SetUPS(ups)
         minimapwidget = controls.minimapwidget
     end)
@@ -238,14 +238,14 @@ AddClassPostConstruct("widgets/controls", AddMiniMap)
 -- special case: ToggleMap gets bypassed when the map gets hidden while on the map screen
 local MapScreen = require "screens/mapscreen"
 MapScreen_OnControl_base = MapScreen.OnControl
-MapScreen.OnControl = function( self, control, down, ... )
-	local returnValues = {MapScreen_OnControl_base(self, control, down, ...)}
-	if minimapwidget and returnValues[1] and (control == _G.CONTROL_MAP or control == _G.CONTROL_CANCEL) then
-		minimapwidget:EnableMinimapUpdating()
-		minimapwidget:Show()
-	end
+MapScreen.OnControl = function(self, control, down, ...)
+    local returnValues = {MapScreen_OnControl_base(self, control, down, ...)}
+    if minimapwidget and returnValues[1] and (control == _G.CONTROL_MAP or control == _G.CONTROL_CANCEL) then
+        minimapwidget:EnableMinimapUpdating()
+        minimapwidget:Show()
+    end
 
-	return unpack(returnValues)
+    return unpack(returnValues)
 end
 
 -- keep track of zooming while on the map screen
@@ -253,18 +253,18 @@ local MapWidget = require "widgets/mapwidget"
 
 MapWidget_OnZoomIn_base = MapWidget.OnZoomIn
 MapWidget.OnZoomIn = function(self, deltazoom, ...)
-	local returnValues = {MapWidget_OnZoomIn_base( self, deltazoom, ... )}
-	if minimapwidget and self.shown then
-		minimapwidget.mapscreenzoom = math.max(0,minimapwidget.mapscreenzoom + (deltazoom or -0.1))
-	end
-	return unpack(returnValues)
+    local returnValues = {MapWidget_OnZoomIn_base(self, deltazoom, ...)}
+    if minimapwidget and self.shown then
+        minimapwidget.mapscreenzoom = math.max(0, minimapwidget.mapscreenzoom + (deltazoom or -0.1))
+    end
+    return unpack(returnValues)
 end
 
 MapWidget_OnZoomOut_base = MapWidget.OnZoomOut
 MapWidget.OnZoomOut = function(self, deltazoom, ...)
-	local returnValues = {MapWidget_OnZoomOut_base( self, deltazoom, ... )}
-	if minimapwidget and self.shown then
-		minimapwidget.mapscreenzoom = minimapwidget.mapscreenzoom + (deltazoom or 0.1)
-	end
-	return unpack(returnValues)
+    local returnValues = {MapWidget_OnZoomOut_base(self, deltazoom, ...)}
+    if minimapwidget and self.shown then
+        minimapwidget.mapscreenzoom = minimapwidget.mapscreenzoom + (deltazoom or 0.1)
+    end
+    return unpack(returnValues)
 end

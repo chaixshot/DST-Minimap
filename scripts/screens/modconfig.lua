@@ -21,13 +21,13 @@ local ROWS_PER_COL = 7
 local options = {}
 
 local ModConfig = Class(Screen, function(self, IsDST)
-	Screen._ctor(self, "ModConfig")
+    Screen._ctor(self, "ModConfig")
 
-	self.IsDST = IsDST
-	self.minimapwidget = nil
-	self.modmain_updatestate_callback = nil
-	self.quicksaving = false
-	self.CONTROL_PAGELEFT = CONTROL_SCROLLBACK
+    self.IsDST = IsDST
+    self.minimapwidget = nil
+    self.modmain_updatestate_callback = nil
+    self.quicksaving = false
+    self.CONTROL_PAGELEFT = CONTROL_SCROLLBACK
     self.CONTROL_PAGERIGHT = CONTROL_SCROLLFWD
 end)
 
@@ -74,7 +74,7 @@ function ModConfig:Open()
     self.bg:SetVAnchor(ANCHOR_MIDDLE)
     self.bg:SetHAnchor(ANCHOR_MIDDLE)
     self.bg:SetScaleMode(SCALEMODE_FILLSCREEN)
-    self.bg:SetTint(0,0,0,.5)	
+    self.bg:SetTint(0, 0, 0, .5)
 
     if self.root then
         self.root:Kill()
@@ -90,15 +90,15 @@ function ModConfig:Open()
     if titlestr:len() > maxtitlelength then
         titlestr = titlestr:sub(1, maxtitlelength)
     end
-    titlestr = titlestr .. " " .. STRINGS.UI.MODSSCREEN.CONFIGSCREENTITLESUFFIX
-    
+    titlestr = titlestr.." "..STRINGS.UI.MODSSCREEN.CONFIGSCREENTITLESUFFIX
+
     local close_button = {
         {text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() self:Apply() end},
         {text = STRINGS.UI.MODSSCREEN.CANCEL, cb = function() self:Cancel() end},
         {text = STRINGS.UI.MODSSCREEN.RESETDEFAULT, cb = function() self:ResetToDefaultValues() end},
     }
-	self.bg = self.root:AddChild(TEMPLATES.RectangleWindow(700, 400, titlestr, close_button))
-	self.bg.title:SetPosition(0, -70)
+    self.bg = self.root:AddChild(TEMPLATES.RectangleWindow(700, 400, titlestr, close_button))
+    self.bg.title:SetPosition(0, -70)
 
     self.option_offset = 0
     if self.optionspanel then
@@ -159,7 +159,7 @@ end
 
 function ModConfig:SetKeyChar(_, key, down, noclose)
     if down then return end
-    
+
     if not noclose then
         TheFrontEnd:PopScreen()
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
@@ -188,25 +188,28 @@ function ModConfig:MapControl(idx, name, value)
     local deviceId = 0
     local controlId = 0
     local default_text = string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, value)
-    local body_text = STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT .. "\n\n" .. default_text
+    local body_text = STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT.."\n\n"..default_text
     local popup = PopupDialogScreen(name, body_text, {
-		{text=STRINGS.UI.CONTROLSSCREEN.CANCEL, cb=function()
-            self.is_mapping = false
-            self.mapping_idx = nil
-            TheFrontEnd:PopScreen()
-            
-            for k,v in pairs(self.inputhandlers) do
-                v:Remove()
+        {
+            text = STRINGS.UI.CONTROLSSCREEN.CANCEL,
+            cb = function()
+                self.is_mapping = false
+                self.mapping_idx = nil
+                TheFrontEnd:PopScreen()
+
+                for k, v in pairs(self.inputhandlers) do
+                    v:Remove()
+                end
             end
-        end}
-	})
-    
+        }
+    })
+
     TheFrontEnd:PushScreen(popup)
 
     TheInputProxy:MapControl(deviceId, controlId)
     self.is_mapping = true
     self.mapping_idx = idx
-    
+
     self.inputhandlers = {}
     table.insert(self.inputhandlers, TheInput:AddControlMappingHandler(
         function(deviceId, controlId, inputId, hasChanged)
@@ -249,8 +252,8 @@ function ModConfig:SplitToInputs(value)
     inputs[4] = tonumber(inputs[4])
     if
         not device or not numInputs or not inputs[1] or not inputs[2] or not inputs[3] or not inputs[4] or device ~= 1 or
-            numInputs < 1
-     then
+        numInputs < 1
+    then
         device = 1
         numInputs = 1
         inputs[1] = 0
@@ -263,7 +266,7 @@ end
 
 function ModConfig:JoinFromInputs(device, numInputs, inputs)
     local inputs_name = {[1] = "", [2] = "", [3] = "", [4] = ""}
-    local new_text_value, new_value = "", tostring(device) .. "+" .. tostring(numInputs) .. "+"
+    local new_text_value, new_value = "", tostring(device).."+"..tostring(numInputs).."+"
     local splitter = ""
 
     for i = 1, 4 do
@@ -273,9 +276,9 @@ function ModConfig:JoinFromInputs(device, numInputs, inputs)
         else
             inputs_name[i] = ""
         end
-        new_value = new_value .. splitter .. (inputs[i] or "0")
+        new_value = new_value..splitter..(inputs[i] or "0")
         if i <= numInputs then
-            new_text_value = new_text_value .. splitter .. inputs_name[i]
+            new_text_value = new_text_value..splitter..inputs_name[i]
         end
         splitter = "+"
     end
@@ -291,22 +294,22 @@ function ModConfig:JoinFromInputs(device, numInputs, inputs)
 end
 
 function ModConfig:OnControlMapped(deviceId, controlId, inputId, hasChanged)
-    if self.is_mapping then 
+    if self.is_mapping then
         -- print("Control [" .. controlId .. "] is now [" .. inputId .. "]", hasChanged, debugstack())
 
         -- removes the "press a button to bind" popup screen. This is not needed when clearing a binding because there is no popup
         if inputId ~= 0xFFFFFFFF then
             TheFrontEnd:PopScreen()
         end
-        
+
         TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_move")
-        
-        self.inst:DoTaskInTime(0.01, function() 
+
+        self.inst:DoTaskInTime(0.01, function()
             if hasChanged then
-                for k,v in pairs(self.optionwidgets) do
+                for k, v in pairs(self.optionwidgets) do
                     if v.root.button and v.root.button.option_idx == self.mapping_idx then
                         local device, numInputs, input1, input2, input3, input4, intParam = TheInputProxy:GetLocalizedControl(deviceId, controlId, false, true)
-                        local new_text_value, new_value = self:JoinFromInputs(device, numInputs, {[1]=input1, [2]=input2, [3]=input3, [4]=input4})
+                        local new_text_value, new_value = self:JoinFromInputs(device, numInputs, {[1] = input1, [2] = input2, [3] = input3, [4] = input4})
                         v.root.button:SetText(new_text_value)
                         if options[self.mapping_idx].default ~= new_value then
                             v.root.button:SetTextColour(UICOLOURS.RED)
@@ -327,12 +330,12 @@ function ModConfig:OnControlMapped(deviceId, controlId, inputId, hasChanged)
 
             self.is_mapping = false
             self.mapping_idx = nil
-            
-            for k,v in pairs(self.inputhandlers) do
+
+            for k, v in pairs(self.inputhandlers) do
                 v:Remove()
             end
         end)
-    end 
+    end
 end
 
 function ModConfig:IsOpen()
@@ -454,7 +457,7 @@ end
 function ModConfig:GetConfigFull()
     self.modname = KnownModIndex:GetModActualName("Minimap HUD Customizable")
     self.modinfofull = self:InitializeModInfo(self.modname, "modinfofull.lua")
-    self.configfull = self:LoadModConfigurationOptions(self.modname .. "_FULL", self.modinfofull)
+    self.configfull = self:LoadModConfigurationOptions(self.modname.."_FULL", self.modinfofull)
 end
 
 function ModConfig:GetModConfigDataBasic(optionname)
@@ -505,29 +508,29 @@ end
 
 function ModConfig:InitializeModInfo(modname, modinfoname)
     local env = {}
-    local fn = kleiloadlua("../mods/" .. modname .. "/" .. modinfoname)
+    local fn = kleiloadlua("../mods/"..modname.."/"..modinfoname)
     local modinfo_message = ""
     if type(fn) == "string" then
-        print("Error loading mod: " .. ModInfoname(modname) .. "!\n " .. fn .. "\n")
+        print("Error loading mod: "..ModInfoname(modname).."!\n "..fn.."\n")
         --table.insert( self.failedmods, {name=modname,error=fn} )
         env.failed = true
     elseif not fn then
-        modinfo_message = modinfo_message .. "No modinfo.lua, using defaults... "
+        modinfo_message = modinfo_message.."No modinfo.lua, using defaults... "
         env.old = true
     else
         local status, r = RunInEnvironment(fn, env)
 
         if status == false then
-            print("Error loading mod: " .. ModInfoname(modname) .. "!\n " .. r .. "\n")
+            print("Error loading mod: "..ModInfoname(modname).."!\n "..r.."\n")
             --table.insert( self.failedmods, {name=modname,error=r} )
             env.failed = true
         elseif env.api_version == nil or env.api_version < MOD_API_VERSION then
-            local old = "Mod " .. modname .. " was built for an older version of the game and requires updating. (api_version is version " .. tostring(env.api_version) .. ", game is version " .. MOD_API_VERSION .. ".)"
-            modinfo_message = modinfo_message .. "Old API! (mod: " .. tostring(env.api_version) .. " game: " .. MOD_API_VERSION .. ") "
+            local old = "Mod "..modname.." was built for an older version of the game and requires updating. (api_version is version "..tostring(env.api_version)..", game is version "..MOD_API_VERSION..".)"
+            modinfo_message = modinfo_message.."Old API! (mod: "..tostring(env.api_version).." game: "..MOD_API_VERSION..") "
             env.old = true
         elseif env.api_version > MOD_API_VERSION then
-            local old = "api_version for " .. modname .. " is in the future, please set to the current version. (api_version is version " .. env.api_version .. ", game is version " .. MOD_API_VERSION .. ".)"
-            print("Error loading mod: " .. ModInfoname(modname) .. "!\n " .. old .. "\n")
+            local old = "api_version for "..modname.." is in the future, please set to the current version. (api_version is version "..env.api_version..", game is version "..MOD_API_VERSION..".)"
+            print("Error loading mod: "..ModInfoname(modname).."!\n "..old.."\n")
             --table.insert( self.failedmods, {name=modname,error=old} )
             env.failed = true
         else
@@ -548,10 +551,10 @@ function ModConfig:InitializeModInfo(modname, modinfoname)
                 if env[v] == nil then
                     if v == "dont_starve_compatible" then
                         -- Print a warning but let the mod load
-                        print( "WARNING loading modinfo.lua: " .. modname .. " does not specify if it is compatible with the base game. It may not work properly." )
+                        print("WARNING loading modinfo.lua: "..modname.." does not specify if it is compatible with the base game. It may not work properly.")
                     elseif v == "reign_of_giants_compatible" then
                         -- Print a warning but let the mod load
-                        print( "WARNING loading modinfo.lua: " .. modname .. " does not specify if it is compatible with Reign of Giants. It may not work properly." )
+                        print("WARNING loading modinfo.lua: "..modname.." does not specify if it is compatible with Reign of Giants. It may not work properly.")
                     elseif v == "configuration_options" then
                         -- Do nothing. It's perfectly fine not to have config options!
                     else
@@ -561,7 +564,7 @@ function ModConfig:InitializeModInfo(modname, modinfoname)
             end
 
             if #missing > 0 then
-                local e = "Error loading modinfo.lua. These fields are required: " .. table.concat(missing, ", ")
+                local e = "Error loading modinfo.lua. These fields are required: "..table.concat(missing, ", ")
                 print(e)
                 --table.insert( self.failedmods, {name=modname,error=e} )
 
@@ -612,10 +615,10 @@ function ModConfig:LoadModConfigurationOptions(configname, modinfo)
                         modinfo.configuration_options = savedata
                     end
                 else
-                    print("Could not load " .. filename)
+                    print("Could not load "..filename)
                 end
             else
-                print("Could not load " .. filename)
+                print("Could not load "..filename)
             end
 
             -- callback()
@@ -672,14 +675,14 @@ function ModConfig:SaveConfigurationOptions(callback, modname, configdata)
     local insz, outsz = SavePersistentString(name_basic, data_basic, ENCODE_SAVES, cb_basic)
 
     -- Save it to disk (FULL)
-    local name_full = KnownModIndex:GetModConfigurationPath(modname .. "_FULL")
+    local name_full = KnownModIndex:GetModConfigurationPath(modname.."_FULL")
     local data_full = DataDumper(configdata, nil, false)
 
     local cb_full = function()
         callback()
         -- And reload it to make sure there's parity after it's been saved
         self.modinfobasic.configuration_options = self:LoadModConfigurationOptions(modname, self.modinfobasic)
-        self.modinfofull.configuration_options = self:LoadModConfigurationOptions(modname .. "_FULL", self.modinfofull)
+        self.modinfofull.configuration_options = self:LoadModConfigurationOptions(modname.."_FULL", self.modinfofull)
 
         -- Update internal state
         self:UpdateState()
@@ -713,20 +716,20 @@ end
 
 function ModConfig:ConfirmRevert(callback)
     TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.BACKTITLE, STRINGS.UI.MODSSCREEN.BACKBODY,
-    {
         {
-            text = STRINGS.UI.MODSSCREEN.YES,
-            cb = callback or function()
-                TheFrontEnd:PopScreen()
-            end
-        },
-        {
-            text = STRINGS.UI.MODSSCREEN.NO,
-            cb = function()
-                TheFrontEnd:PopScreen()
-            end
-        }
-    }))
+            {
+                text = STRINGS.UI.MODSSCREEN.YES,
+                cb = callback or function()
+                    TheFrontEnd:PopScreen()
+                end
+            },
+            {
+                text = STRINGS.UI.MODSSCREEN.NO,
+                cb = function()
+                    TheFrontEnd:PopScreen()
+                end
+            }
+        }))
 end
 
 function ModConfig:Cancel()
@@ -797,7 +800,7 @@ end
 
 function ModConfig:Scroll(dir)
     if (dir > 0 and (self.option_offset + ROWS_PER_COL * 2) < #options) or (dir < 0 and self.option_offset + dir >= 0) then
-        self.option_offset = self.option_offset + (dir*2)
+        self.option_offset = self.option_offset + (dir * 2)
     end
 
     if self.option_offset > 0 then
@@ -816,24 +819,24 @@ function ModConfig:Scroll(dir)
 end
 
 function ModConfig:AddHoverText(widget, params, labelText)
-	params = params or {}
-	
-	-- Widget class defaults these on its own in SetHoverText
-	-- params.font = params.font or NEWFONT_OUTLINE
-	-- params.size = params.size or 22
-	
-	params.offset_x = params.offset_x or 2
-	-- add an extra 30 if it's got two lines of text
-	params.offset_y = params.offset_y or 75
-	local sign = params.offset_y < 0 and -1 or 1
-	params.offset_y = params.offset_y + sign*(labelText:match("\n") and 30 or 0)
-	params.colour = params.colour or UICOLOURS.WHITE
-	
-	-- switcharoo with the text to make sure the hover parenting works correctly (bypassing a dev workaround for labels)
-	local text = widget.text
-	widget.text = nil
-	widget:SetHoverText(labelText, params)
-	widget.text = text
+    params = params or {}
+
+    -- Widget class defaults these on its own in SetHoverText
+    -- params.font = params.font or NEWFONT_OUTLINE
+    -- params.size = params.size or 22
+
+    params.offset_x = params.offset_x or 2
+    -- add an extra 30 if it's got two lines of text
+    params.offset_y = params.offset_y or 75
+    local sign = params.offset_y < 0 and -1 or 1
+    params.offset_y = params.offset_y + sign * (labelText:match("\n") and 30 or 0)
+    params.colour = params.colour or UICOLOURS.WHITE
+
+    -- switcharoo with the text to make sure the hover parenting works correctly (bypassing a dev workaround for labels)
+    local text = widget.text
+    widget.text = nil
+    widget:SetHoverText(labelText, params)
+    widget.text = text
 end
 
 function ModConfig:RefreshOptions()
@@ -855,11 +858,11 @@ function ModConfig:RefreshOptions()
         if options[idx] then
             local group = self.optionspanel:AddChild(Widget("SpinnerGroup"))
             group.bg = group:AddChild(TEMPLATES.ListItemBackground(340, 40))
-            
+
             if options[idx].name == "Toggle Minimap Key" or options[idx].name == "Center Character Key" or options[idx].name == "Config Shotcut Key" then
                 local button_height = 30
                 local button_width = 100
-                
+
                 local value = options[idx].value or options[idx].saved or options[idx].default
                 local device, numInputs, inputs = self:SplitToInputs(value)
                 local new_text_value, new_value = self:JoinFromInputs(device, numInputs, inputs)
@@ -881,7 +884,7 @@ function ModConfig:RefreshOptions()
                 button:SetOnClick(function()
                     self:MapControl(idx, options[idx].name, new_text_value)
                 end)
-                
+
                 -- Left lable
                 local spacing = 40
                 local label = button:AddChild(Text(CHATFONT, 18, (options[idx].label and options[idx].label..":" or options[idx].name..":") or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING))
@@ -890,16 +893,16 @@ function ModConfig:RefreshOptions()
                 label:SetRegionSize(200, 50)
                 label:SetPosition(-170, 0, 0)
                 label:SetClickable(false)
-                
+
                 -- Unbind button
                 local unbinding_btn = group:AddChild(ImageButton("images/global_redux.xml", "close.tex", "close.tex"))
-				unbinding_btn:SetOnClick(function()
+                unbinding_btn:SetOnClick(function()
                     self.mapping_idx = idx
                     self:SetKeyChar(false, 0, false, true)
                 end)
-				unbinding_btn:SetPosition(button_width+43, 0)
-				unbinding_btn:SetScale(0.4, 0.4)
-				unbinding_btn:SetHoverText(STRINGS.UI.CONTROLSSCREEN.UNBIND)
+                unbinding_btn:SetPosition(button_width + 43, 0)
+                unbinding_btn:SetScale(0.4, 0.4)
+                unbinding_btn:SetHoverText(STRINGS.UI.CONTROLSSCREEN.UNBIND)
 
                 group.label = label
                 group.button = button
@@ -930,20 +933,20 @@ function ModConfig:RefreshOptions()
                     160, -- label width
                     150, -- spinner width
                     30, -- arrow height
-                    0,  -- spacing between label and spinner
+                    0, -- spacing between label and spinner
                     CHATFONT, 18, -- font and size
                     0, -- horizontal offset
                     function(value, oldvalue) -- onchanged_fn
                     end
                 ))
                 self:AddHoverText(spinner.label, {offset_x = -4, offset_y = 70}, (options[idx].hover or ""))
-                
+
                 local default_value = options[idx].value
                 if default_value == nil then
                     default_value = options[idx].default
                 end
                 spinner.spinner:SetSelected(default_value)
-                
+
                 spinner.spinner:SetOnChangedFn(function(value, oldvalue)
                     options[idx].value = value
                     self:MakeDirty()
@@ -956,19 +959,19 @@ function ModConfig:RefreshOptions()
                             spinner.spinner:SetTextColour(UICOLOURS.BLACK) -- Black
                         end
                     end
-                    
+
                     for k, v in ipairs(options[idx].options) do
                         if value == v.data then
                             self:AddHoverText(spinner.spinner, {offset_x = -4, offset_y = 70}, (v.hover or ""))
                             break
                         end
                     end
-                    
+
                     if options[idx].name == "Updates Per Second" then
                         self.minimapwidget:SetUPS(value)
                     end
                 end)
-                
+
                 for k, v in ipairs(options[idx].options) do
                     if default_value == v.data then
                         self:AddHoverText(spinner.spinner, {offset_x = -4, offset_y = 70}, (v.hover or ""))
@@ -985,9 +988,9 @@ function ModConfig:RefreshOptions()
                         spinner.spinner:SetTextColour(UICOLOURS.BLACK) -- Black
                     end
                 end
-                
+
                 local checkcustom = true
-                for k,v in pairs(spin_options) do
+                for k, v in pairs(spin_options) do
                     if v.data == default_value then
                         checkcustom = false
                     end
@@ -1085,16 +1088,16 @@ function ModConfig:GetHelpText()
 
     if self:IsDirty() then
         local focus = self:GetDeepestFocus()
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT) .. " " .. STRINGS.UI.HELP.APPLY)
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_ACCEPT).." "..STRINGS.UI.HELP.APPLY)
     end
-    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL) .. " " .. STRINGS.UI.HELP.BACK)
+    table.insert(t, TheInput:GetLocalizedControl(controller_id, CONTROL_CANCEL).." "..STRINGS.UI.HELP.BACK)
 
     if self.leftbutton.shown then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, self.CONTROL_PAGELEFT) .. " " .. STRINGS.UI.HELP.SCROLLBACK)
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, self.CONTROL_PAGELEFT).." "..STRINGS.UI.HELP.SCROLLBACK)
     end
 
     if self.rightbutton.shown then
-        table.insert(t, TheInput:GetLocalizedControl(controller_id, self.CONTROL_PAGERIGHT) .. " " .. STRINGS.UI.HELP.SCROLLFWD)
+        table.insert(t, TheInput:GetLocalizedControl(controller_id, self.CONTROL_PAGERIGHT).." "..STRINGS.UI.HELP.SCROLLFWD)
     end
 
     return table.concat(t, "  ")

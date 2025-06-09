@@ -1,18 +1,18 @@
 name = "Minimap HUD Customizable"
 desc = {
-	en = [[
+    en = [[
 		Adds a minimap to the HUD with More customiZable and more controlable configuration options in game mode are added.
 
-I think that this MOD is very complex to understand and to use it. 
-When more customizing is unnecessary, you must use original "Minimap HUD" 
+I think that this MOD is very complex to understand and to use it.
+When more customizing is unnecessary, you must use original "Minimap HUD"
 Moreover, the original is very steady]],
-	th = [[
+    th = [[
 		เพิ่มแผนที่ย่อไปยัง HUD โดยเพิ่มตัวเลือกการกำหนดค่าที่ปรับแต่งได้และควบคุมได้มากขึ้นในโหมดเกม
 
 ฉันคิดว่า MOD นี้ซับซ้อนมากในการทำความเข้าใจและใช้งาน
 เมื่อไม่จำเป็นต้องปรับแต่งเพิ่มเติม คุณต้องใช้ "Minimap HUD" ดั้งเดิม
 ยิ่งกว่านั้นต้นฉบับยังนิ่งมาก]],
-	ru = [[
+    ru = [[
 		Добавляет мини-карту в HUD с дополнительными настраиваемыми и более управляемыми параметрами конфигурации в игровом режиме.
 
 Я думаю, что этот МОД очень сложен для понимания и использования.
@@ -73,37 +73,37 @@ configuration_options =
         {
             {description = "0", data = 0},
             {description = "1", data = 5},
-            {description = "2", data = 12.5*1},
-            {description = "3", data = 12.5*2},
-            {description = "4", data = 12.5*3},
-            {description = "5", data = 12.5*4},
-            {description = "6", data = 12.5*5},
-            {description = "7", data = 12.5*6},
-            {description = "8", data = 12.5*7},
-            {description = "9", data = 12.5*8},
-            {description = "10", data = 12.5*9},
-            {description = "11", data = 12.5*10},
-            {description = "12", data = 12.5*11},
-            {description = "13", data = 12.5*12},
-            {description = "14", data = 12.5*13},
-            {description = "15", data = 12.5*14},
-            {description = "16", data = 12.5*15},
-            {description = "17", data = 12.5*16},
-            {description = "18", data = 12.5*17},
-            {description = "19", data = 12.5*18},
-            {description = "20", data = 12.5*19},
-            {description = "21", data = 12.5*20},
-            {description = "22", data = 12.5*21},
-            {description = "23", data = 12.5*22},
-            {description = "24", data = 12.5*23},
-            {description = "25", data = 12.5*24},
-            {description = "26", data = 12.5*25},
-            {description = "27", data = 12.5*26},
-            {description = "28", data = 12.5*27},
-            {description = "29", data = 12.5*28},
-            {description = "30", data = 12.5*29},
+            {description = "2", data = 12.5 * 1},
+            {description = "3", data = 12.5 * 2},
+            {description = "4", data = 12.5 * 3},
+            {description = "5", data = 12.5 * 4},
+            {description = "6", data = 12.5 * 5},
+            {description = "7", data = 12.5 * 6},
+            {description = "8", data = 12.5 * 7},
+            {description = "9", data = 12.5 * 8},
+            {description = "10", data = 12.5 * 9},
+            {description = "11", data = 12.5 * 10},
+            {description = "12", data = 12.5 * 11},
+            {description = "13", data = 12.5 * 12},
+            {description = "14", data = 12.5 * 13},
+            {description = "15", data = 12.5 * 14},
+            {description = "16", data = 12.5 * 15},
+            {description = "17", data = 12.5 * 16},
+            {description = "18", data = 12.5 * 17},
+            {description = "19", data = 12.5 * 18},
+            {description = "20", data = 12.5 * 19},
+            {description = "21", data = 12.5 * 20},
+            {description = "22", data = 12.5 * 21},
+            {description = "23", data = 12.5 * 22},
+            {description = "24", data = 12.5 * 23},
+            {description = "25", data = 12.5 * 24},
+            {description = "26", data = 12.5 * 25},
+            {description = "27", data = 12.5 * 26},
+            {description = "28", data = 12.5 * 27},
+            {description = "29", data = 12.5 * 28},
+            {description = "30", data = 12.5 * 29},
         },
-        default = 12.5*5
+        default = 12.5 * 5
     },
     {
         name = "Vertical Margin",
@@ -111,43 +111,43 @@ configuration_options =
         {
             {description = "0", data = 0},
             {description = "1", data = 5},
-            {description = "2", data = 12.5*1},
-            {description = "3", data = 12.5*2},
-            {description = "4", data = 12.5*3},
-            {description = "5", data = 12.5*4},
-            {description = "6", data = 12.5*5},
-            {description = "7", data = 12.5*6},
-            {description = "8", data = 12.5*7},
-            {description = "9", data = 12.5*8},
-            {description = "10", data = 12.5*9},
-            {description = "11", data = 12.5*10},
-            {description = "12", data = 12.5*11},
-            {description = "13", data = 12.5*12},
-            {description = "14", data = 12.5*13},
-            {description = "15", data = 12.5*14},
-            {description = "16", data = 12.5*15},
-            {description = "17", data = 12.5*16},
-            {description = "18", data = 12.5*17},
-            {description = "19", data = 12.5*18},
-            {description = "20", data = 12.5*19},
-            {description = "21", data = 12.5*20},
-            {description = "22", data = 12.5*21},
-            {description = "23", data = 12.5*22},
-            {description = "24", data = 12.5*23},
-            {description = "25", data = 12.5*24},
-            {description = "26", data = 12.5*25},
-            {description = "27", data = 12.5*26},
-            {description = "28", data = 12.5*27},
-            {description = "29", data = 12.5*28},
-            {description = "30", data = 12.5*29},
+            {description = "2", data = 12.5 * 1},
+            {description = "3", data = 12.5 * 2},
+            {description = "4", data = 12.5 * 3},
+            {description = "5", data = 12.5 * 4},
+            {description = "6", data = 12.5 * 5},
+            {description = "7", data = 12.5 * 6},
+            {description = "8", data = 12.5 * 7},
+            {description = "9", data = 12.5 * 8},
+            {description = "10", data = 12.5 * 9},
+            {description = "11", data = 12.5 * 10},
+            {description = "12", data = 12.5 * 11},
+            {description = "13", data = 12.5 * 12},
+            {description = "14", data = 12.5 * 13},
+            {description = "15", data = 12.5 * 14},
+            {description = "16", data = 12.5 * 15},
+            {description = "17", data = 12.5 * 16},
+            {description = "18", data = 12.5 * 17},
+            {description = "19", data = 12.5 * 18},
+            {description = "20", data = 12.5 * 19},
+            {description = "21", data = 12.5 * 20},
+            {description = "22", data = 12.5 * 21},
+            {description = "23", data = 12.5 * 22},
+            {description = "24", data = 12.5 * 23},
+            {description = "25", data = 12.5 * 24},
+            {description = "26", data = 12.5 * 25},
+            {description = "27", data = 12.5 * 26},
+            {description = "28", data = 12.5 * 27},
+            {description = "29", data = 12.5 * 28},
+            {description = "30", data = 12.5 * 29},
         },
-        default = 12.5*1
+        default = 12.5 * 1
     },
     {
         name = "Default Zoom",
         options =
         {
-            {description = "0 (Most ZoomIn)",	data = 0},
+            {description = "0 (Most ZoomIn)", data = 0},
             {description = "1", data = 1},
             {description = "2", data = 2},
             {description = "3", data = 3},
@@ -167,11 +167,11 @@ configuration_options =
             {description = "17", data = 17},
             {description = "18", data = 18},
             {description = "19", data = 19},
-            {description = "20 (Most ZoomOut)",data = 20},
+            {description = "20 (Most ZoomOut)", data = 20},
         },
         default = 4,
     },
-	{
+    {
         name = "Updates Per Second",
         label = "Update throttling",
         hover = "Minimap's throttled updates per second, can help with FPS issues.",
